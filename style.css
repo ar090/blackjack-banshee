@@ -1740,11 +1740,27 @@ input[type="range"]::-moz-range-thumb:hover {
     
     .cards {
         min-height: 90px;
-        padding: 10px;
-        gap: 5px;
+        padding: 10px 5px;
+        gap: 0;
         justify-content: center;
         background: rgba(34, 31, 31, 0.3);
         border-radius: 10px;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .cards::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Overlap cards */
+    .cards .card:not(:first-child) {
+        margin-left: -25px;
     }
     
     .score {
@@ -1757,7 +1773,16 @@ input[type="range"]::-moz-range-thumb:hover {
     .card {
         width: 60px;
         height: 84px;
+        flex-shrink: 0;
+        position: relative;
     }
+    
+    .cards .card:nth-child(1) { z-index: 1; }
+    .cards .card:nth-child(2) { z-index: 2; }
+    .cards .card:nth-child(3) { z-index: 3; }
+    .cards .card:nth-child(4) { z-index: 4; }
+    .cards .card:nth-child(5) { z-index: 5; }
+    .cards .card:nth-child(6) { z-index: 6; }
     
     .card .rank {
         font-size: 1.8em;
@@ -1805,20 +1830,27 @@ input[type="range"]::-moz-range-thumb:hover {
         grid-column: 1 / -1;
     }
     
-    /* When only deal button is enabled, make it prominent */
-    .controls:has(.btn:disabled:nth-child(2)):has(.btn:disabled:nth-child(3)):has(.btn:disabled:nth-child(4)):has(.btn:disabled:nth-child(5)) {
-        position: absolute;
-        bottom: 80px;
+    /* Style deal button when game is idle */
+    .game-idle .controls {
+        position: fixed;
+        bottom: 50%;
         left: 50%;
-        transform: translateX(-50%);
+        transform: translate(-50%, 50%);
         width: 80%;
         padding: 0;
+        display: block;
+        margin-top: 0;
     }
     
-    .controls:has(.btn:disabled:nth-child(2)):has(.btn:disabled:nth-child(3)):has(.btn:disabled:nth-child(4)):has(.btn:disabled:nth-child(5)) #deal {
+    .game-idle .controls .btn:not(#deal) {
+        display: none;
+    }
+    
+    .game-idle .controls #deal {
         height: 60px;
         font-size: 1.2em;
         font-weight: 700;
+        width: 100%;
         box-shadow: 0 8px 25px rgba(122, 184, 95, 0.3);
     }
     
@@ -1882,7 +1914,10 @@ input[type="range"]::-moz-range-thumb:hover {
         right: 10px;
         width: 40px;
         height: 40px;
-        z-index: 1001;
+        background: rgba(96, 97, 97, 0.3);
+        border: 1px solid rgba(202, 228, 188, 0.2);
+        padding: 0;
+        z-index: 10;
     }
     
     .settings-toggle-top i {

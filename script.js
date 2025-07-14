@@ -549,6 +549,12 @@ class BlackjackGame {
         // Disable deal button during dealing
         document.getElementById('deal').disabled = true;
         
+        // Remove game-idle class on mobile
+        const mobileGameSection = document.querySelector('.mobile-section[data-section="game"]');
+        if (mobileGameSection) {
+            mobileGameSection.classList.remove('game-idle');
+        }
+        
         // Deal cards sequentially with delay
         await this.dealCardWithDelay('player', true);
         await this.dealCardWithDelay('dealer', true);
@@ -1384,6 +1390,12 @@ class BlackjackGame {
         // Disable deal button during dealing
         document.getElementById('deal').disabled = true;
         
+        // Remove game-idle class on mobile
+        const mobileGameSection = document.querySelector('.mobile-section[data-section="game"]');
+        if (mobileGameSection) {
+            mobileGameSection.classList.remove('game-idle');
+        }
+        
         // Deal cards sequentially with delay
         await this.dealCardWithDelay('player', true);
         await this.dealCardWithDelay('dealer', true);
@@ -1474,6 +1486,9 @@ class BlackjackGame {
             gameClone.insertBefore(countToggle, gameClone.firstChild);
             
             gameSection.appendChild(gameClone);
+            
+            // Add game-idle class by default
+            gameSection.classList.add('game-idle');
             
             // Re-attach event listeners for cloned elements
             this.reattachMobileEventListeners();
