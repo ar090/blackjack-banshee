@@ -1662,7 +1662,7 @@ input[type="range"]::-moz-range-thumb:hover {
     
     .left-content h1 {
         font-size: 1.5em;
-        padding: 10px 50px;
+        padding: 60px 10px 10px;
         margin: 0;
         text-align: center;
         flex-shrink: 0;
@@ -1682,7 +1682,7 @@ input[type="range"]::-moz-range-thumb:hover {
     /* Mobile count display */
     .count-display {
         padding: 10px;
-        margin: 10px 0;
+        margin: 10px;
         flex-shrink: 0;
         background: rgba(96, 97, 97, 0.2);
         border-radius: 15px;
@@ -1737,6 +1737,7 @@ input[type="range"]::-moz-range-thumb:hover {
         padding: 10px 10px 0;
         min-height: 0;
         gap: 10px;
+        margin-top: 10px;
     }
     
     .dealer-section, .player-section {
