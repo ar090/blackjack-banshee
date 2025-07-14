@@ -764,6 +764,11 @@ h1 {
     flex-wrap: wrap;
 }
 
+/* Hide action-buttons wrapper on desktop */
+.action-buttons {
+    display: contents;
+}
+
 .btn {
     padding: 15px 35px;
     font-size: 1.1em;
@@ -1760,7 +1765,7 @@ input[type="range"]::-moz-range-thumb:hover {
     
     /* Overlap cards */
     .cards .card:not(:first-child) {
-        margin-left: -25px;
+        margin-left: -15px;
     }
     
     .score {
@@ -1771,8 +1776,8 @@ input[type="range"]::-moz-range-thumb:hover {
     
     /* Mobile cards */
     .card {
-        width: 60px;
-        height: 84px;
+        width: 65px;
+        height: 91px;
         flex-shrink: 0;
         position: relative;
     }
@@ -1811,23 +1816,45 @@ input[type="range"]::-moz-range-thumb:hover {
     /* Mobile controls */
     .controls {
         flex-shrink: 0;
-        padding: 15px 10px;
-        gap: 8px;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(2, 1fr);
+        padding: 20px;
+        gap: 10px;
+        display: flex;
+        flex-direction: column;
         margin-top: auto;
     }
     
     .controls .btn {
-        padding: 12px 5px;
-        font-size: 0.9em;
+        padding: 15px;
+        font-size: 1em;
+        font-weight: 600;
         min-width: auto;
-        height: 45px;
+        height: 50px;
+        border-radius: 25px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Action buttons row */
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    #hit, #stand {
+        grid-column: span 1;
+    }
+    
+    #double, #split {
+        grid-column: span 1;
     }
     
     #deal {
-        grid-column: 1 / -1;
+        width: 100%;
+        margin-bottom: 10px;
     }
     
     /* Style deal button when game is idle */
@@ -1842,7 +1869,7 @@ input[type="range"]::-moz-range-thumb:hover {
         margin-top: 0;
     }
     
-    .game-idle .controls .btn:not(#deal) {
+    .game-idle .controls .action-buttons {
         display: none;
     }
     
