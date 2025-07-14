@@ -857,7 +857,8 @@ h1 {
     background: rgba(34, 31, 31, 0.9);
     border: 1px solid rgba(202, 228, 188, 0.3);
     color: #CAE4BC;
-    padding: 12px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
@@ -866,6 +867,10 @@ h1 {
     transition: all 0.3s ease;
     z-index: 1001;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.settings-toggle-top i {
+    font-size: 24px;
 }
 
 .settings-toggle-top:hover {
@@ -1383,11 +1388,12 @@ input[type="range"]::-moz-range-thumb:hover {
     
     .settings-toggle-top {
         padding: 10px;
+        width: 40px;
+        height: 40px;
     }
     
-    .settings-toggle-top svg {
-        width: 20px;
-        height: 20px;
+    .settings-toggle-top i {
+        font-size: 20px;
     }
 }
 
@@ -1659,15 +1665,17 @@ input[type="range"]::-moz-range-thumb:hover {
     
     /* Mobile count display */
     .count-display {
-        padding: 10px;
-        margin-bottom: 10px;
+        padding: 15px;
+        margin: 15px 0;
         flex-shrink: 0;
+        background: rgba(96, 97, 97, 0.2);
+        border-radius: 15px;
     }
     
     .count-section {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 10px;
+        gap: 15px;
     }
     
     .count-item {
@@ -1683,9 +1691,10 @@ input[type="range"]::-moz-range-thumb:hover {
         flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
         padding: 10px;
         min-height: 0;
+        margin-top: 20px;
     }
     
     .dealer-section, .player-section {
@@ -1759,13 +1768,7 @@ input[type="range"]::-moz-range-thumb:hover {
     }
     
     .shoe-controls {
-        margin-top: 10px;
-        flex-shrink: 0;
-    }
-    
-    .shoe-controls .btn {
-        font-size: 0.9em;
-        padding: 10px;
+        display: none;
     }
     
     .message {
@@ -1813,6 +1816,10 @@ input[type="range"]::-moz-range-thumb:hover {
         width: 40px;
         height: 40px;
         z-index: 1001;
+    }
+    
+    .settings-toggle-top i {
+        font-size: 20px;
     }
     
     .settings-modal-content {

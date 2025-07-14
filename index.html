@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Blackjack Banshee</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
     <button id="settings-toggle" class="settings-toggle-top">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5a3.5 3.5 0 0 1-3.5 3.5m-.5-13l.5-2.5L12.5 5l1.96-.5L15 6.5L17 7l.5 2l-1.5.5v5l1.5.5l-.5 2l-2-.5l-.54 2l-1.96-.5L12 15.5L11.5 18l-1.96.5L9 16.5L7 16l-.5-2l1.5-.5v-5L6.5 9L7 7l2 .5l.54-2L11.5 6Z"></path>
-        </svg>
+        <i class="ph-bold ph-gear"></i>
     </button>
     
     <div class="settings-modal" id="settings-modal">
@@ -187,19 +186,19 @@
     <!-- Mobile Navigation -->
     <nav class="mobile-nav">
         <button class="mobile-nav-item active" data-section="game">
-            <span class="mobile-nav-icon">🎴</span>
+            <i class="mobile-nav-icon ph-bold ph-cards"></i>
             <span class="mobile-nav-label">Game</span>
         </button>
         <button class="mobile-nav-item" data-section="strategy">
-            <span class="mobile-nav-icon">📊</span>
+            <i class="mobile-nav-icon ph-bold ph-chart-bar"></i>
             <span class="mobile-nav-label">Strategy</span>
         </button>
         <button class="mobile-nav-item" data-section="cards">
-            <span class="mobile-nav-icon">🃏</span>
+            <i class="mobile-nav-icon ph-bold ph-stack"></i>
             <span class="mobile-nav-label">Cards</span>
         </button>
         <button class="mobile-nav-item" data-section="history">
-            <span class="mobile-nav-icon">📜</span>
+            <i class="mobile-nav-icon ph-bold ph-scroll"></i>
             <span class="mobile-nav-label">History</span>
         </button>
     </nav>

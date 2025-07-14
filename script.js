@@ -1443,10 +1443,21 @@ class BlackjackGame {
         const cardsSection = document.querySelector('.mobile-section[data-section="cards"]');
         const historySection = document.querySelector('.mobile-section[data-section="history"]');
         
-        // Move game content
-        const gameContent = document.querySelector('.left-content');
-        if (gameContent && gameSection && !gameSection.contains(gameContent)) {
-            gameSection.appendChild(gameContent);
+        // Clear game section first
+        if (gameSection) {
+            gameSection.innerHTML = '';
+        }
+        
+        // Clone game content WITHOUT remaining cards
+        const leftContent = document.querySelector('.left-content');
+        if (leftContent && gameSection) {
+            const gameClone = leftContent.cloneNode(true);
+            // Remove the remaining cards from the clone
+            const remainingCardsInClone = gameClone.querySelector('.remaining-cards');
+            if (remainingCardsInClone) {
+                remainingCardsInClone.remove();
+            }
+            gameSection.appendChild(gameClone);
         }
         
         // Clone strategy guide
@@ -1455,7 +1466,7 @@ class BlackjackGame {
             strategySection.appendChild(strategyGuide.cloneNode(true));
         }
         
-        // Clone remaining cards
+        // Clone remaining cards to cards section only
         const remainingCards = document.querySelector('.remaining-cards');
         if (remainingCards && cardsSection && !cardsSection.querySelector('.remaining-cards')) {
             cardsSection.appendChild(remainingCards.cloneNode(true));
