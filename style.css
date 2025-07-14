@@ -1647,10 +1647,11 @@ input[type="range"]::-moz-range-thumb:hover {
     
     .left-content h1 {
         font-size: 1.5em;
-        padding: 10px 0;
+        padding: 10px 50px;
         margin: 0;
         text-align: center;
         flex-shrink: 0;
+        position: relative;
     }
     
     .left-content h1 .mascot {
@@ -1665,11 +1666,37 @@ input[type="range"]::-moz-range-thumb:hover {
     
     /* Mobile count display */
     .count-display {
-        padding: 15px;
-        margin: 15px 0;
+        padding: 10px;
+        margin: 10px 0;
         flex-shrink: 0;
         background: rgba(96, 97, 97, 0.2);
         border-radius: 15px;
+        display: none;
+    }
+    
+    .count-display.visible {
+        display: block;
+    }
+    
+    .mobile-count-toggle {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(96, 97, 97, 0.3);
+        border: 1px solid rgba(202, 228, 188, 0.2);
+        color: #CAE4BC;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+    }
+    
+    .mobile-count-toggle i {
+        font-size: 20px;
     }
     
     .count-section {
@@ -1691,26 +1718,39 @@ input[type="range"]::-moz-range-thumb:hover {
         flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        padding: 10px;
+        justify-content: center;
+        padding: 10px 10px 0;
         min-height: 0;
-        margin-top: 20px;
+        gap: 10px;
     }
     
     .dealer-section, .player-section {
-        margin-bottom: 15px;
+        background: rgba(96, 97, 97, 0.2);
+        border-radius: 15px;
+        padding: 15px;
+        margin: 0;
+        flex: 0 0 auto;
     }
     
     .dealer-section h2, .player-section h2 {
-        font-size: 1.2em;
+        font-size: 1em;
         margin-bottom: 10px;
+        text-align: center;
     }
     
     .cards {
-        min-height: 120px;
+        min-height: 90px;
         padding: 10px;
         gap: 5px;
         justify-content: center;
+        background: rgba(34, 31, 31, 0.3);
+        border-radius: 10px;
+    }
+    
+    .score {
+        font-size: 0.9em;
+        margin-top: 5px;
+        text-align: center;
     }
     
     /* Mobile cards */
@@ -1746,17 +1786,19 @@ input[type="range"]::-moz-range-thumb:hover {
     /* Mobile controls */
     .controls {
         flex-shrink: 0;
-        padding: 10px 0;
+        padding: 15px 10px;
         gap: 8px;
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(2, 1fr);
+        margin-top: auto;
     }
     
     .controls .btn {
         padding: 12px 5px;
         font-size: 0.9em;
         min-width: auto;
+        height: 45px;
     }
     
     #deal {
@@ -1779,6 +1821,14 @@ input[type="range"]::-moz-range-thumb:hover {
         z-index: 999;
         max-width: 90%;
         text-align: center;
+        background: rgba(34, 31, 31, 0.95);
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid rgba(202, 228, 188, 0.3);
+    }
+    
+    .message:empty {
+        display: none;
     }
     
     /* Strategy section on mobile */

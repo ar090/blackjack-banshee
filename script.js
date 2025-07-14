@@ -1457,6 +1457,22 @@ class BlackjackGame {
             if (remainingCardsInClone) {
                 remainingCardsInClone.remove();
             }
+            
+            // Add mobile count toggle button
+            const countToggle = document.createElement('button');
+            countToggle.className = 'mobile-count-toggle';
+            countToggle.innerHTML = '<i class="ph-bold ph-eye"></i>';
+            countToggle.addEventListener('click', () => {
+                const countDisplay = gameClone.querySelector('.count-display');
+                if (countDisplay) {
+                    countDisplay.classList.toggle('visible');
+                    countToggle.innerHTML = countDisplay.classList.contains('visible') 
+                        ? '<i class="ph-bold ph-eye-slash"></i>' 
+                        : '<i class="ph-bold ph-eye"></i>';
+                }
+            });
+            gameClone.insertBefore(countToggle, gameClone.firstChild);
+            
             gameSection.appendChild(gameClone);
         }
         
