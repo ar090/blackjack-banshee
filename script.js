@@ -1474,6 +1474,12 @@ class BlackjackGame {
             gameClone.insertBefore(countToggle, gameClone.firstChild);
             
             gameSection.appendChild(gameClone);
+            
+            // Re-attach event listeners for cloned elements
+            this.reattachMobileEventListeners();
+            
+            // Set up observer to sync changes
+            this.setupMobileSync();
         }
         
         // Clone strategy guide
@@ -1557,6 +1563,76 @@ class BlackjackGame {
             touchEndX = e.changedTouches[0].screenX;
             handleSwipe();
         }, { passive: true });
+    }
+    
+    reattachMobileEventListeners() {
+        // Find all buttons in mobile sections and reattach listeners
+        const mobileGameSection = document.querySelector('.mobile-section[data-section="game"]');
+        if (!mobileGameSection) return;
+        
+        const dealBtn = mobileGameSection.querySelector('#deal');
+        const hitBtn = mobileGameSection.querySelector('#hit');
+        const standBtn = mobileGameSection.querySelector('#stand');
+        const doubleBtn = mobileGameSection.querySelector('#double');
+        const splitBtn = mobileGameSection.querySelector('#split');
+        
+        if (dealBtn) dealBtn.addEventListener('click', () => this.deal());
+        if (hitBtn) hitBtn.addEventListener('click', () => this.hit());
+        if (standBtn) standBtn.addEventListener('click', () => this.stand());
+        if (doubleBtn) doubleBtn.addEventListener('click', () => this.double());
+        if (splitBtn) splitBtn.addEventListener('click', () => this.split());
+    }
+    
+    setupMobileSync() {
+        // Observer to sync desktop changes to mobile
+        const desktopGameArea = document.querySelector('.left-content');
+        const mobileGameSection = document.querySelector('.mobile-section[data-section="game"]');
+        if (!desktopGameArea || !mobileGameSection) return;
+        
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                // Sync card displays
+                if (mutation.target.id === 'dealer-cards' || mutation.target.id === 'player-cards') {
+                    const mobileTarget = mobileGameSection.querySelector(`#${mutation.target.id}`);
+                    if (mobileTarget) {
+                        mobileTarget.innerHTML = mutation.target.innerHTML;
+                    }
+                }
+                
+                // Sync scores
+                if (mutation.target.id === 'dealer-score' || mutation.target.id === 'player-score') {
+                    const mobileTarget = mobileGameSection.querySelector(`#${mutation.target.id}`);
+                    if (mobileTarget) {
+                        mobileTarget.textContent = mutation.target.textContent;
+                    }
+                }
+                
+                // Sync counts
+                const countIds = ['hand-count', 'running-count', 'true-count', 'decks-remaining', 'shoe-timer'];
+                if (countIds.includes(mutation.target.id)) {
+                    const mobileTarget = mobileGameSection.querySelector(`#${mutation.target.id}`);
+                    if (mobileTarget) {
+                        mobileTarget.textContent = mutation.target.textContent;
+                    }
+                }
+                
+                // Sync button states
+                if (mutation.type === 'attributes' && mutation.attributeName === 'disabled') {
+                    const mobileBtn = mobileGameSection.querySelector(`#${mutation.target.id}`);
+                    if (mobileBtn) {
+                        mobileBtn.disabled = mutation.target.disabled;
+                    }
+                }
+            });
+        });
+        
+        observer.observe(desktopGameArea, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true,
+            attributeFilter: ['disabled']
+        });
     }
 }
 

@@ -1805,6 +1805,23 @@ input[type="range"]::-moz-range-thumb:hover {
         grid-column: 1 / -1;
     }
     
+    /* When only deal button is enabled, make it prominent */
+    .controls:has(.btn:disabled:nth-child(2)):has(.btn:disabled:nth-child(3)):has(.btn:disabled:nth-child(4)):has(.btn:disabled:nth-child(5)) {
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        padding: 0;
+    }
+    
+    .controls:has(.btn:disabled:nth-child(2)):has(.btn:disabled:nth-child(3)):has(.btn:disabled:nth-child(4)):has(.btn:disabled:nth-child(5)) #deal {
+        height: 60px;
+        font-size: 1.2em;
+        font-weight: 700;
+        box-shadow: 0 8px 25px rgba(122, 184, 95, 0.3);
+    }
+    
     .controls .hotkey {
         display: none;
     }
