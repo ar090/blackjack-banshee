@@ -1517,7 +1517,14 @@ class BlackjackGame {
         // Clone strategy guide
         const strategyGuide = document.querySelector('.strategy-guide');
         if (strategyGuide && strategySection && !strategySection.querySelector('.strategy-guide')) {
-            strategySection.appendChild(strategyGuide.cloneNode(true));
+            const strategyClone = strategyGuide.cloneNode(true);
+            strategySection.appendChild(strategyClone);
+            
+            // Re-attach reset stats button listener
+            const resetStatsBtn = strategyClone.querySelector('#reset-stats');
+            if (resetStatsBtn) {
+                resetStatsBtn.addEventListener('click', () => this.resetStrategyStats());
+            }
         }
         
         // Clone remaining cards to cards section only
@@ -1529,7 +1536,14 @@ class BlackjackGame {
         // Clone count history
         const countHistory = document.querySelector('.count-history');
         if (countHistory && historySection && !historySection.querySelector('.count-history')) {
-            historySection.appendChild(countHistory.cloneNode(true));
+            const historyClone = countHistory.cloneNode(true);
+            historySection.appendChild(historyClone);
+            
+            // Re-attach clear history button listener
+            const clearHistoryBtn = historyClone.querySelector('#clear-history');
+            if (clearHistoryBtn) {
+                clearHistoryBtn.addEventListener('click', () => this.clearHistory());
+            }
         }
         
         // Mark mobile sections as active
@@ -1616,7 +1630,15 @@ class BlackjackGame {
     }
     
     setupMobileSync() {
-        // Observer to sync desktop changes to mobile
+        // Set up comprehensive sync for all mobile sections
+        this.setupGameSync();
+        this.setupStrategySync();
+        this.setupCardsSync();
+        this.setupHistorySync();
+    }
+    
+    setupGameSync() {
+        // Observer to sync desktop game changes to mobile
         const desktopGameArea = document.querySelector('.left-content');
         const mobileGameSection = document.querySelector('.mobile-section[data-section="game"]');
         if (!desktopGameArea || !mobileGameSection) return;
@@ -1664,6 +1686,85 @@ class BlackjackGame {
             characterData: true,
             attributes: true,
             attributeFilter: ['disabled']
+        });
+    }
+    
+    setupStrategySync() {
+        // Sync strategy guide updates
+        const desktopStrategy = document.querySelector('.strategy-guide');
+        const mobileStrategy = document.querySelector('.mobile-section[data-section="strategy"] .strategy-guide');
+        if (!desktopStrategy || !mobileStrategy) return;
+        
+        const observer = new MutationObserver(() => {
+            // Sync all strategy elements
+            const elementsToSync = [
+                'recommended-action', 'move-explanation', 'strategy-feedback',
+                'correct-moves', 'total-moves', 'accuracy', 'wrong-moves-list'
+            ];
+            
+            elementsToSync.forEach(id => {
+                const desktopEl = desktopStrategy.querySelector(`#${id}`);
+                const mobileEl = mobileStrategy.querySelector(`#${id}`);
+                if (desktopEl && mobileEl) {
+                    if (id === 'wrong-moves-list') {
+                        mobileEl.innerHTML = desktopEl.innerHTML;
+                    } else {
+                        mobileEl.textContent = desktopEl.textContent;
+                    }
+                }
+            });
+        });
+        
+        observer.observe(desktopStrategy, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    }
+    
+    setupCardsSync() {
+        // Sync remaining cards display
+        const desktopCards = document.querySelector('.remaining-cards');
+        const mobileCards = document.querySelector('.mobile-section[data-section="cards"] .remaining-cards');
+        if (!desktopCards || !mobileCards) return;
+        
+        const observer = new MutationObserver(() => {
+            // Sync card counts and details
+            const elementsToSync = [
+                'low-cards-count', 'low-cards-details',
+                'neutral-cards-count', 'neutral-cards-details',
+                'high-cards-count', 'high-cards-details'
+            ];
+            
+            elementsToSync.forEach(id => {
+                const desktopEl = desktopCards.querySelector(`#${id}`);
+                const mobileEl = mobileCards.querySelector(`#${id}`);
+                if (desktopEl && mobileEl) {
+                    mobileEl.innerHTML = desktopEl.innerHTML;
+                }
+            });
+        });
+        
+        observer.observe(desktopCards, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    }
+    
+    setupHistorySync() {
+        // Sync count history
+        const desktopHistory = document.querySelector('.count-history #history-list');
+        const mobileHistory = document.querySelector('.mobile-section[data-section="history"] #history-list');
+        if (!desktopHistory || !mobileHistory) return;
+        
+        const observer = new MutationObserver(() => {
+            mobileHistory.innerHTML = desktopHistory.innerHTML;
+        });
+        
+        observer.observe(desktopHistory, {
+            childList: true,
+            subtree: true
         });
     }
 }
