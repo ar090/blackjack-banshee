@@ -31,6 +31,12 @@ class BlackjackGame {
         this.initializeBasicStrategy();
         this.updateWrongMovesDisplay();
         this.initializeMobileLayout();
+        
+        // Set initial game-idle state
+        const controls = document.querySelector('.controls');
+        if (controls) {
+            controls.classList.add('game-idle');
+        }
     }
 
     initializeEventListeners() {
@@ -549,12 +555,6 @@ class BlackjackGame {
         // Disable deal button during dealing
         document.getElementById('deal').disabled = true;
         
-        // Remove game-idle class on mobile
-        const mobileGameSection = document.querySelector('.mobile-section[data-section="game"]');
-        if (mobileGameSection) {
-            mobileGameSection.classList.remove('game-idle');
-        }
-        
         // Deal cards sequentially with delay
         await this.dealCardWithDelay('player', true);
         await this.dealCardWithDelay('dealer', true);
@@ -863,8 +863,28 @@ class BlackjackGame {
         dealBtn.disabled = this.gameActive;
         hitBtn.disabled = !this.gameActive;
         standBtn.disabled = !this.gameActive;
-        doubleBtn.disabled = !this.gameActive || this.playerHand.length !== 2;
-        splitBtn.disabled = true; // Not implemented yet
+        doubleBtn.disabled = !this.gameActive || this.playerHand.length !== 2 || this.splitMode;
+        splitBtn.disabled = !this.canSplit();
+        
+        // Toggle game-idle class on controls
+        const controls = document.querySelector('.controls');
+        const mobileControls = document.querySelector('.mobile-section[data-section="game"] .controls');
+        
+        if (controls) {
+            if (this.gameActive) {
+                controls.classList.remove('game-idle');
+            } else {
+                controls.classList.add('game-idle');
+            }
+        }
+        
+        if (mobileControls) {
+            if (this.gameActive) {
+                mobileControls.classList.remove('game-idle');
+            } else {
+                mobileControls.classList.add('game-idle');
+            }
+        }
     }
 
     initializeBasicStrategy() {
@@ -1390,12 +1410,6 @@ class BlackjackGame {
         // Disable deal button during dealing
         document.getElementById('deal').disabled = true;
         
-        // Remove game-idle class on mobile
-        const mobileGameSection = document.querySelector('.mobile-section[data-section="game"]');
-        if (mobileGameSection) {
-            mobileGameSection.classList.remove('game-idle');
-        }
-        
         // Deal cards sequentially with delay
         await this.dealCardWithDelay('player', true);
         await this.dealCardWithDelay('dealer', true);
@@ -1487,8 +1501,11 @@ class BlackjackGame {
             
             gameSection.appendChild(gameClone);
             
-            // Add game-idle class by default
-            gameSection.classList.add('game-idle');
+            // Ensure cloned controls have game-idle class
+            const clonedControls = gameClone.querySelector('.controls');
+            if (clonedControls) {
+                clonedControls.classList.add('game-idle');
+            }
             
             // Re-attach event listeners for cloned elements
             this.reattachMobileEventListeners();

@@ -1844,40 +1844,31 @@ input[type="range"]::-moz-range-thumb:hover {
         gap: 10px;
     }
     
-    #hit, #stand {
-        grid-column: span 1;
-    }
-    
-    #double, #split {
-        grid-column: span 1;
-    }
-    
+    /* Deal button takes full width when visible */
     #deal {
+        grid-column: 1 / -1;
         width: 100%;
-        margin-bottom: 10px;
     }
     
-    /* Style deal button when game is idle */
-    .game-idle .controls {
-        position: fixed;
-        bottom: 50%;
-        left: 50%;
-        transform: translate(-50%, 50%);
-        width: 80%;
-        padding: 0;
-        display: block;
-        margin-top: 0;
-    }
-    
-    .game-idle .controls .action-buttons {
+    /* Hide action buttons when game is idle */
+    .game-idle #hit,
+    .game-idle #stand,
+    .game-idle #double,
+    .game-idle #split {
         display: none;
     }
     
-    .game-idle .controls #deal {
+    /* Hide deal button when game is active */
+    .controls:not(.game-idle) #deal,
+    .mobile-section:not(.game-idle) #deal {
+        display: none;
+    }
+    
+    /* Make deal button more prominent when it's the only button */
+    .game-idle #deal {
         height: 60px;
         font-size: 1.2em;
         font-weight: 700;
-        width: 100%;
         box-shadow: 0 8px 25px rgba(122, 184, 95, 0.3);
     }
     
