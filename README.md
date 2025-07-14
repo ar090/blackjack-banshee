@@ -118,6 +118,37 @@ Works best in modern browsers:
 - Safari
 - Edge
 
+## Version Management
+
+This project uses automatic version management that updates the version displayed in the settings with the current git commit hash.
+
+### How it works
+
+1. **VERSION constant**: The `script.js` file contains a `VERSION` constant at the top that stores the current git hash.
+2. **Automatic updates**: The version is updated automatically when deploying via `make deploy`
+3. **Manual update**: You can manually update the version by running:
+   ```bash
+   ./update-version.sh
+   ```
+
+### Deployment
+
+To deploy the latest version:
+```bash
+make deploy
+```
+
+This will:
+- Update the VERSION constant with the current git hash
+- Commit all changes
+- Push to the origin repository
+
+### Notes
+
+- The version will show "dev" when not in a git repository
+- The version uses the short hash (first 7 characters) for brevity
+- The version is displayed in the Settings modal footer
+
 ## Credits
 
 Created with 🎰 by the Blackjack Banshee

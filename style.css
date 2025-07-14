@@ -917,7 +917,7 @@ h1 {
 
 .settings-modal-content {
     background: linear-gradient(135deg, rgba(34, 31, 31, 0.98) 0%, rgba(34, 31, 31, 0.95) 100%);
-    padding: 40px;
+    padding: 40px 40px 30px;
     border-radius: 25px;
     border: 1px solid rgba(202, 228, 188, 0.3);
     box-shadow: 
@@ -984,24 +984,26 @@ h1 {
 .setting-item {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     width: 100%;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
 }
 
 .setting-item label {
     color: #CAE4BC;
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: 600;
     letter-spacing: 2px;
     text-transform: uppercase;
     white-space: nowrap;
     font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    margin-bottom: 5px;
 }
 
 .deck-selector {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     justify-content: center;
 }
 
@@ -1009,14 +1011,14 @@ h1 {
     background: rgba(96, 97, 97, 0.3);
     border: 2px solid rgba(202, 228, 188, 0.2);
     color: #CAE4BC;
-    padding: 15px 25px;
-    border-radius: 15px;
+    padding: 12px 20px;
+    border-radius: 12px;
     cursor: pointer;
     font-family: 'Orbitron', sans-serif;
-    font-size: 1.3em;
+    font-size: 1.1em;
     font-weight: 700;
     transition: all 0.3s ease;
-    min-width: 70px;
+    min-width: 60px;
 }
 
 .deck-btn:hover {
@@ -1035,17 +1037,19 @@ h1 {
 .speed-control {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
     width: 100%;
     position: relative;
+    padding: 0 10px;
 }
 
 .speed-label {
     color: #606161;
-    font-size: 0.9em;
+    font-size: 0.85em;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 1px;
+    font-family: 'Rajdhani', sans-serif;
 }
 
 .settings select {
@@ -1119,13 +1123,72 @@ input[type="range"]::-moz-range-thumb:hover {
     font-family: 'Orbitron', sans-serif;
     color: #7ab85f;
     font-weight: 700;
-    font-size: 1.1em;
-    min-width: 80px;
+    font-size: 1em;
+    min-width: 70px;
     text-align: center;
     position: absolute;
-    bottom: -30px;
+    bottom: -25px;
     left: 50%;
     transform: translateX(-50%);
+}
+
+/* Settings Footer */
+.settings-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(202, 228, 188, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9em;
+}
+
+.version-info, .author-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.version-label, .author-label {
+    color: #606161;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.version-hash {
+    color: #7ab85f;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.author-link {
+    color: #CAE4BC;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.author-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #7ab85f;
+    transition: width 0.3s ease;
+}
+
+.author-link:hover {
+    color: #7ab85f;
+}
+
+.author-link:hover::after {
+    width: 100%;
 }
 
 .remaining-cards {
@@ -1568,6 +1631,31 @@ input[type="range"]::-moz-range-thumb:hover {
         display: block;
     }
     
+    /* Mobile count container */
+    .mobile-count-container {
+        padding: 20px;
+        height: 100%;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .mobile-count-container .count-display {
+        display: block !important;
+        margin: 0;
+    }
+    
+    .mobile-count-container .count-history {
+        flex: 1;
+        height: auto;
+        margin: 0;
+        background: linear-gradient(135deg, rgba(34, 31, 31, 0.95) 0%, rgba(34, 31, 31, 0.85) 100%);
+        border: 1px solid rgba(202, 228, 188, 0.2);
+        border-radius: 20px;
+        padding: 20px;
+    }
+    
     /* Mobile navigation tabs */
     .mobile-nav {
         position: fixed;
@@ -1634,18 +1722,30 @@ input[type="range"]::-moz-range-thumb:hover {
         right: 0;
         bottom: 60px;
         overflow-y: auto;
-        display: none;
-        padding: 10px;
+        display: none !important;
+        padding: 0;
         -webkit-overflow-scrolling: touch;
+        background: #221f1f;
+        z-index: 1;
     }
     
     .mobile-section.active {
-        display: block;
+        display: block !important;
+        z-index: 10;
+    }
+    
+    /* Ensure game section has padding */
+    .mobile-section[data-section="game"] {
+        padding: 10px;
     }
     
     /* Game section on mobile */
-    .mobile-game-section {
-        display: flex;
+    .mobile-section[data-section="game"] {
+        display: none !important;
+    }
+    
+    .mobile-section[data-section="game"].active {
+        display: flex !important;
         flex-direction: column;
         height: 100%;
     }
@@ -1658,11 +1758,12 @@ input[type="range"]::-moz-range-thumb:hover {
         height: 100%;
         display: flex;
         flex-direction: column;
+        overflow-y: auto;
     }
     
     .left-content h1 {
         font-size: 1.5em;
-        padding: 60px 10px 10px;
+        padding: 20px 10px 10px;
         margin: 0;
         text-align: center;
         flex-shrink: 0;
@@ -1682,7 +1783,7 @@ input[type="range"]::-moz-range-thumb:hover {
     /* Mobile count display */
     .count-display {
         padding: 10px;
-        margin: 10px;
+        margin: 0 10px 15px;
         flex-shrink: 0;
         background: rgba(96, 97, 97, 0.2);
         border-radius: 15px;
@@ -1693,26 +1794,6 @@ input[type="range"]::-moz-range-thumb:hover {
         display: block;
     }
     
-    .mobile-count-toggle {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        background: rgba(96, 97, 97, 0.3);
-        border: 1px solid rgba(202, 228, 188, 0.2);
-        color: #CAE4BC;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 1001;
-    }
-    
-    .mobile-count-toggle i {
-        font-size: 20px;
-    }
     
     .count-section {
         flex-wrap: wrap;
@@ -1733,11 +1814,10 @@ input[type="range"]::-moz-range-thumb:hover {
         flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        padding: 10px 10px 0;
+        justify-content: space-between;
+        padding: 10px;
         min-height: 0;
         gap: 10px;
-        margin-top: 10px;
     }
     
     .dealer-section, .player-section {
@@ -1746,6 +1826,7 @@ input[type="range"]::-moz-range-thumb:hover {
         padding: 15px;
         margin: 0;
         flex: 0 0 auto;
+        min-height: 150px;
     }
     
     .dealer-section h2, .player-section h2 {
@@ -1893,20 +1974,42 @@ input[type="range"]::-moz-range-thumb:hover {
     
     .message {
         position: fixed;
-        top: 50%;
+        top: calc(50% - 35px);
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 999;
         max-width: 90%;
         text-align: center;
         background: rgba(34, 31, 31, 0.95);
-        padding: 20px;
-        border-radius: 15px;
+        padding: 15px 30px;
+        border-radius: 20px;
         border: 1px solid rgba(202, 228, 188, 0.3);
+        font-size: 1.2em;
+        font-weight: 600;
+        letter-spacing: 1px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
     
     .message:empty {
         display: none;
+    }
+    
+    .message.win {
+        color: #7ab85f;
+        border-color: #7ab85f;
+        box-shadow: 0 10px 30px rgba(122, 184, 95, 0.3);
+    }
+    
+    .message.lose {
+        color: #ff6b6b;
+        border-color: #ff6b6b;
+        box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+    }
+    
+    .message.push {
+        color: #ffd93d;
+        border-color: #ffd93d;
+        box-shadow: 0 10px 30px rgba(255, 217, 61, 0.3);
     }
     
     /* Strategy section on mobile */

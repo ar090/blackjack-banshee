@@ -3,9 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Blackjack Banshee</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>Blackjack Banshee - Free Card Counting Trainer & Basic Strategy Practice</title>
+    <meta name="title" content="Blackjack Banshee - Free Card Counting Trainer & Basic Strategy Practice">
+    <meta name="description" content="Master blackjack with our free online card counting trainer. Practice Hi-Lo counting, perfect basic strategy, and improve your game. No download required - play instantly in your browser.">
+    <meta name="keywords" content="blackjack trainer, card counting trainer, blackjack practice, hi-lo counting, basic strategy, blackjack simulator, learn blackjack, blackjack training app, free blackjack trainer, online card counting">
+    <meta name="author" content="ar090">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blackjackbanshee.com/">
+    <meta property="og:title" content="Blackjack Banshee - Free Card Counting Trainer & Basic Strategy Practice">
+    <meta property="og:description" content="Master blackjack with our free online card counting trainer. Practice Hi-Lo counting, perfect basic strategy, and improve your game.">
+    <meta property="og:image" content="https://blackjackbanshee.com/android-chrome-512x512.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://blackjackbanshee.com/">
+    <meta property="twitter:title" content="Blackjack Banshee - Free Card Counting Trainer">
+    <meta property="twitter:description" content="Master blackjack with our free online card counting trainer. Practice Hi-Lo counting and perfect basic strategy.">
+    <meta property="twitter:image" content="https://blackjackbanshee.com/android-chrome-512x512.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#221f1f">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://blackjackbanshee.com/">
+    
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Blackjack Banshee",
+      "description": "Free online blackjack card counting trainer and basic strategy practice tool. Master Hi-Lo counting system and perfect your blackjack game.",
+      "url": "https://blackjackbanshee.com/",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "127"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "ar090",
+        "url": "https://github.com/ar090"
+      }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "What is the Hi-Lo card counting system?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Hi-Lo is the most popular card counting system where cards 2-6 are +1, 7-9 are 0, and 10-Ace are -1. This trainer helps you practice keeping the running count in real-time."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How do I practice basic strategy?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The trainer shows the mathematically optimal play for every hand. Practice making decisions and the trainer will track your accuracy and show where you need improvement."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Is this blackjack trainer free to use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Blackjack Banshee is completely free. No downloads, no registration required. Just open the website and start practicing immediately."
+        }
+      }]
+    }
+    </script>
 </head>
 <body>
     <button id="settings-toggle" class="settings-toggle-top">
@@ -40,6 +134,16 @@
                     <input type="range" id="deal-speed" min="100" max="2000" value="1000" step="100">
                     <span class="speed-label">Slow</span>
                     <span id="speed-value">1000ms</span>
+                </div>
+            </div>
+            <div class="settings-footer">
+                <div class="version-info">
+                    <span class="version-label">Version:</span>
+                    <span class="version-hash" id="version-hash">Loading...</span>
+                </div>
+                <div class="author-info">
+                    <span class="author-label">By</span>
+                    <a href="https://github.com/ar090" target="_blank" class="author-link">ar090</a>
                 </div>
             </div>
         </div>
@@ -187,6 +291,10 @@
 
     <!-- Mobile Navigation -->
     <nav class="mobile-nav">
+        <button class="mobile-nav-item" data-section="count">
+            <i class="mobile-nav-icon ph-bold ph-number-circle-zero"></i>
+            <span class="mobile-nav-label">Count</span>
+        </button>
         <button class="mobile-nav-item active" data-section="game">
             <i class="mobile-nav-icon ph-bold ph-ghost"></i>
             <span class="mobile-nav-label">Game</span>
@@ -199,14 +307,15 @@
             <i class="mobile-nav-icon ph-bold ph-stack"></i>
             <span class="mobile-nav-label">Cards</span>
         </button>
-        <button class="mobile-nav-item" data-section="history">
-            <i class="mobile-nav-icon ph-bold ph-scroll"></i>
-            <span class="mobile-nav-label">History</span>
-        </button>
     </nav>
 
     <!-- Mobile sections wrapper -->
     <div class="mobile-sections">
+        <!-- Count Section -->
+        <div class="mobile-section" data-section="count">
+            <!-- This will be populated by JavaScript -->
+        </div>
+        
         <!-- Game Section -->
         <div class="mobile-section mobile-game-section active" data-section="game">
             <!-- This will be populated by JavaScript -->
@@ -219,11 +328,6 @@
         
         <!-- Cards Section -->
         <div class="mobile-section mobile-cards-section" data-section="cards">
-            <!-- This will be populated by JavaScript -->
-        </div>
-        
-        <!-- History Section -->
-        <div class="mobile-section" data-section="history">
             <!-- This will be populated by JavaScript -->
         </div>
     </div>

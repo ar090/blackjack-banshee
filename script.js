@@ -1,3 +1,6 @@
+// Version info - updated during build/commit
+const VERSION = 'e9129b6'; // Will be replaced with git hash
+
 // Card counting trainer
 class BlackjackGame {
     constructor() {
@@ -89,6 +92,7 @@ class BlackjackGame {
         
         settingsToggle.addEventListener('click', () => {
             settingsModal.classList.add('active');
+            this.updateVersionInfo();
         });
         
         settingsClose.addEventListener('click', () => {
@@ -412,6 +416,14 @@ class BlackjackGame {
             remainingCards.classList.add('hidden');
             toggleBtn.innerHTML = 'Show Cards <span class="hotkey">[Shift+Space]</span>';
         }
+    }
+    
+    updateVersionInfo() {
+        const versionElement = document.getElementById('version-hash');
+        if (!versionElement) return;
+        
+        // Display the version constant
+        versionElement.textContent = VERSION;
     }
 
     addToHistory(action, runningCount, trueCount) {
@@ -833,6 +845,12 @@ class BlackjackGame {
                 holeCardElement.innerHTML = newCard.innerHTML;
             }
             this.updateScores();
+            
+            // Force sync to mobile
+            const mobileDealer = document.querySelector('.mobile-section[data-section="game"] #dealer-cards');
+            if (mobileDealer) {
+                mobileDealer.innerHTML = dealerCardsContainer.innerHTML;
+            }
         }
         
         this.showMessage(message, result);
@@ -850,6 +868,16 @@ class BlackjackGame {
         messageEl.className = 'message';
         if (type) {
             messageEl.classList.add(type);
+        }
+        
+        // Also update mobile message
+        const mobileMessage = document.querySelector('.mobile-section[data-section="game"] #message');
+        if (mobileMessage) {
+            mobileMessage.textContent = text;
+            mobileMessage.className = 'message';
+            if (type) {
+                mobileMessage.classList.add(type);
+            }
         }
     }
 
@@ -1464,40 +1492,32 @@ class BlackjackGame {
     
     setupMobileSections() {
         // Clone content to mobile sections
+        const countSection = document.querySelector('.mobile-section[data-section="count"]');
         const gameSection = document.querySelector('.mobile-section[data-section="game"]');
         const strategySection = document.querySelector('.mobile-section[data-section="strategy"]');
         const cardsSection = document.querySelector('.mobile-section[data-section="cards"]');
-        const historySection = document.querySelector('.mobile-section[data-section="history"]');
         
         // Clear game section first
         if (gameSection) {
             gameSection.innerHTML = '';
         }
         
-        // Clone game content WITHOUT remaining cards
+        // Clone game content WITHOUT remaining cards AND count display
         const leftContent = document.querySelector('.left-content');
         if (leftContent && gameSection) {
             const gameClone = leftContent.cloneNode(true);
+            
             // Remove the remaining cards from the clone
             const remainingCardsInClone = gameClone.querySelector('.remaining-cards');
             if (remainingCardsInClone) {
                 remainingCardsInClone.remove();
             }
             
-            // Add mobile count toggle button
-            const countToggle = document.createElement('button');
-            countToggle.className = 'mobile-count-toggle';
-            countToggle.innerHTML = '<i class="ph-bold ph-eye"></i>';
-            countToggle.addEventListener('click', () => {
-                const countDisplay = gameClone.querySelector('.count-display');
-                if (countDisplay) {
-                    countDisplay.classList.toggle('visible');
-                    countToggle.innerHTML = countDisplay.classList.contains('visible') 
-                        ? '<i class="ph-bold ph-eye-slash"></i>' 
-                        : '<i class="ph-bold ph-eye"></i>';
-                }
-            });
-            gameClone.insertBefore(countToggle, gameClone.firstChild);
+            // Remove the count display from game section
+            const countDisplayInClone = gameClone.querySelector('.count-display');
+            if (countDisplayInClone) {
+                countDisplayInClone.remove();
+            }
             
             gameSection.appendChild(gameClone);
             
@@ -1533,17 +1553,47 @@ class BlackjackGame {
             cardsSection.appendChild(remainingCards.cloneNode(true));
         }
         
-        // Clone count history
-        const countHistory = document.querySelector('.count-history');
-        if (countHistory && historySection && !historySection.querySelector('.count-history')) {
-            const historyClone = countHistory.cloneNode(true);
-            historySection.appendChild(historyClone);
+        // Setup Count section with both count display and history
+        if (countSection) {
+            countSection.innerHTML = ''; // Clear first
             
-            // Re-attach clear history button listener
-            const clearHistoryBtn = historyClone.querySelector('#clear-history');
-            if (clearHistoryBtn) {
-                clearHistoryBtn.addEventListener('click', () => this.clearHistory());
+            // Create a container for count content
+            const countContainer = document.createElement('div');
+            countContainer.className = 'mobile-count-container';
+            
+            // Add a title
+            const title = document.createElement('h2');
+            title.textContent = 'Count & History';
+            title.style.textAlign = 'center';
+            title.style.color = '#CAE4BC';
+            title.style.marginBottom = '20px';
+            title.style.fontFamily = "'Orbitron', sans-serif";
+            title.style.letterSpacing = '2px';
+            title.style.textTransform = 'uppercase';
+            countContainer.appendChild(title);
+            
+            // Clone count display
+            const countDisplay = document.querySelector('.count-display');
+            if (countDisplay) {
+                const countClone = countDisplay.cloneNode(true);
+                countClone.classList.add('visible'); // Always visible in count tab
+                countContainer.appendChild(countClone);
             }
+            
+            // Clone count history
+            const countHistory = document.querySelector('.count-history');
+            if (countHistory) {
+                const historyClone = countHistory.cloneNode(true);
+                countContainer.appendChild(historyClone);
+                
+                // Re-attach clear history button listener
+                const clearHistoryBtn = historyClone.querySelector('#clear-history');
+                if (clearHistoryBtn) {
+                    clearHistoryBtn.addEventListener('click', () => this.clearHistory());
+                }
+            }
+            
+            countSection.appendChild(countContainer);
         }
         
         // Mark mobile sections as active
@@ -1569,12 +1619,14 @@ class BlackjackGame {
                 
                 // Update active section
                 sections.forEach(section => {
-                    if (section.dataset.section === targetSection) {
-                        section.classList.add('active');
-                    } else {
-                        section.classList.remove('active');
-                    }
+                    section.classList.remove('active');
                 });
+                
+                // Add active to target section
+                const targetSectionElement = document.querySelector(`.mobile-section[data-section="${targetSection}"]`);
+                if (targetSectionElement) {
+                    targetSectionElement.classList.add('active');
+                }
             });
         });
     }
@@ -1634,7 +1686,7 @@ class BlackjackGame {
         this.setupGameSync();
         this.setupStrategySync();
         this.setupCardsSync();
-        this.setupHistorySync();
+        this.setupCountSync();
     }
     
     setupGameSync() {
@@ -1752,20 +1804,46 @@ class BlackjackGame {
         });
     }
     
-    setupHistorySync() {
-        // Sync count history
+    setupCountSync() {
+        // Sync count display and history to count section
+        const countSection = document.querySelector('.mobile-section[data-section="count"]');
+        if (!countSection) return;
+        
+        // Sync count display values
+        const desktopCountDisplay = document.querySelector('.count-display');
+        const mobileCountDisplay = countSection.querySelector('.count-display');
+        if (desktopCountDisplay && mobileCountDisplay) {
+            const countObserver = new MutationObserver(() => {
+                const countIds = ['hand-count', 'running-count', 'true-count', 'decks-remaining', 'shoe-timer'];
+                countIds.forEach(id => {
+                    const desktopEl = desktopCountDisplay.querySelector(`#${id}`);
+                    const mobileEl = mobileCountDisplay.querySelector(`#${id}`);
+                    if (desktopEl && mobileEl) {
+                        mobileEl.textContent = desktopEl.textContent;
+                    }
+                });
+            });
+            
+            countObserver.observe(desktopCountDisplay, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+        }
+        
+        // Sync history
         const desktopHistory = document.querySelector('.count-history #history-list');
-        const mobileHistory = document.querySelector('.mobile-section[data-section="history"] #history-list');
-        if (!desktopHistory || !mobileHistory) return;
-        
-        const observer = new MutationObserver(() => {
-            mobileHistory.innerHTML = desktopHistory.innerHTML;
-        });
-        
-        observer.observe(desktopHistory, {
-            childList: true,
-            subtree: true
-        });
+        const mobileHistory = countSection.querySelector('#history-list');
+        if (desktopHistory && mobileHistory) {
+            const historyObserver = new MutationObserver(() => {
+                mobileHistory.innerHTML = desktopHistory.innerHTML;
+            });
+            
+            historyObserver.observe(desktopHistory, {
+                childList: true,
+                subtree: true
+            });
+        }
     }
 }
 
