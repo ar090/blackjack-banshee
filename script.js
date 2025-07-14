@@ -30,6 +30,7 @@ class BlackjackGame {
         this.resetShoe();
         this.initializeBasicStrategy();
         this.updateWrongMovesDisplay();
+        this.initializeMobileLayout();
     }
 
     initializeEventListeners() {
@@ -1405,6 +1406,130 @@ class BlackjackGame {
         const decksRemaining = this.shoe.length / 52;
         const trueCount = decksRemaining > 0 ? this.runningCount / decksRemaining : 0;
         this.addToHistory('New hand dealt', this.runningCount, trueCount);
+    }
+    
+    initializeMobileLayout() {
+        // Check if we're on mobile
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        
+        if (isMobile) {
+            // Move content to mobile sections
+            this.setupMobileSections();
+            
+            // Initialize mobile navigation
+            this.initializeMobileNav();
+            
+            // Add swipe gesture support
+            this.initializeSwipeGestures();
+        }
+        
+        // Handle orientation changes and resize
+        window.addEventListener('resize', () => {
+            const wasDesktop = !document.querySelector('.mobile-sections').classList.contains('active');
+            const isNowMobile = window.matchMedia('(max-width: 768px)').matches;
+            
+            if (wasDesktop && isNowMobile) {
+                this.setupMobileSections();
+            } else if (!wasDesktop && !isNowMobile) {
+                this.restoreDesktopLayout();
+            }
+        });
+    }
+    
+    setupMobileSections() {
+        // Clone content to mobile sections
+        const gameSection = document.querySelector('.mobile-section[data-section="game"]');
+        const strategySection = document.querySelector('.mobile-section[data-section="strategy"]');
+        const cardsSection = document.querySelector('.mobile-section[data-section="cards"]');
+        const historySection = document.querySelector('.mobile-section[data-section="history"]');
+        
+        // Move game content
+        const gameContent = document.querySelector('.left-content');
+        if (gameContent && gameSection && !gameSection.contains(gameContent)) {
+            gameSection.appendChild(gameContent);
+        }
+        
+        // Clone strategy guide
+        const strategyGuide = document.querySelector('.strategy-guide');
+        if (strategyGuide && strategySection && !strategySection.querySelector('.strategy-guide')) {
+            strategySection.appendChild(strategyGuide.cloneNode(true));
+        }
+        
+        // Clone remaining cards
+        const remainingCards = document.querySelector('.remaining-cards');
+        if (remainingCards && cardsSection && !cardsSection.querySelector('.remaining-cards')) {
+            cardsSection.appendChild(remainingCards.cloneNode(true));
+        }
+        
+        // Clone count history
+        const countHistory = document.querySelector('.count-history');
+        if (countHistory && historySection && !historySection.querySelector('.count-history')) {
+            historySection.appendChild(countHistory.cloneNode(true));
+        }
+        
+        // Mark mobile sections as active
+        document.querySelector('.mobile-sections')?.classList.add('active');
+    }
+    
+    restoreDesktopLayout() {
+        // This would restore the desktop layout if needed
+        document.querySelector('.mobile-sections')?.classList.remove('active');
+    }
+    
+    initializeMobileNav() {
+        const navItems = document.querySelectorAll('.mobile-nav-item');
+        const sections = document.querySelectorAll('.mobile-section');
+        
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetSection = item.dataset.section;
+                
+                // Update active nav item
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                
+                // Update active section
+                sections.forEach(section => {
+                    if (section.dataset.section === targetSection) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+            });
+        });
+    }
+    
+    initializeSwipeGestures() {
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const threshold = 50; // Minimum swipe distance
+        
+        const handleSwipe = () => {
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > threshold) {
+                const navItems = document.querySelectorAll('.mobile-nav-item');
+                const activeIndex = Array.from(navItems).findIndex(item => item.classList.contains('active'));
+                
+                if (diff > 0 && activeIndex < navItems.length - 1) {
+                    // Swipe left - next section
+                    navItems[activeIndex + 1].click();
+                } else if (diff < 0 && activeIndex > 0) {
+                    // Swipe right - previous section
+                    navItems[activeIndex - 1].click();
+                }
+            }
+        };
+        
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
     }
 }
 

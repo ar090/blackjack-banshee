@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Blackjack Banshee</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -181,6 +181,49 @@
                 <div id="history-list"></div>
                 <button id="clear-history" class="btn">Clear History</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+        <button class="mobile-nav-item active" data-section="game">
+            <span class="mobile-nav-icon">🎴</span>
+            <span class="mobile-nav-label">Game</span>
+        </button>
+        <button class="mobile-nav-item" data-section="strategy">
+            <span class="mobile-nav-icon">📊</span>
+            <span class="mobile-nav-label">Strategy</span>
+        </button>
+        <button class="mobile-nav-item" data-section="cards">
+            <span class="mobile-nav-icon">🃏</span>
+            <span class="mobile-nav-label">Cards</span>
+        </button>
+        <button class="mobile-nav-item" data-section="history">
+            <span class="mobile-nav-icon">📜</span>
+            <span class="mobile-nav-label">History</span>
+        </button>
+    </nav>
+
+    <!-- Mobile sections wrapper -->
+    <div class="mobile-sections">
+        <!-- Game Section -->
+        <div class="mobile-section mobile-game-section active" data-section="game">
+            <!-- This will be populated by JavaScript -->
+        </div>
+        
+        <!-- Strategy Section -->
+        <div class="mobile-section" data-section="strategy">
+            <!-- This will be populated by JavaScript -->
+        </div>
+        
+        <!-- Cards Section -->
+        <div class="mobile-section mobile-cards-section" data-section="cards">
+            <!-- This will be populated by JavaScript -->
+        </div>
+        
+        <!-- History Section -->
+        <div class="mobile-section" data-section="history">
+            <!-- This will be populated by JavaScript -->
         </div>
     </div>
 
