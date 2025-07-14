@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack Banshee</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button id="settings-toggle" class="settings-toggle-top">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5a3.5 3.5 0 0 1-3.5 3.5m-.5-13l.5-2.5L12.5 5l1.96-.5L15 6.5L17 7l.5 2l-1.5.5v5l1.5.5l-.5 2l-2-.5l-.54 2l-1.96-.5L12 15.5L11.5 18l-1.96.5L9 16.5L7 16l-.5-2l1.5-.5v-5L6.5 9L7 7l2 .5l.54-2L11.5 6Z"></path>
+        </svg>
+    </button>
+    
+    <div class="settings-modal" id="settings-modal">
+        <div class="settings-modal-content">
+            <button class="settings-close" id="settings-close">&times;</button>
+            <h3>Settings</h3>
+            <div class="setting-item">
+                <label>Number of Decks</label>
+                <div class="deck-selector">
+                    <button class="deck-btn active" data-decks="1">1</button>
+                    <button class="deck-btn" data-decks="2">2</button>
+                    <button class="deck-btn" data-decks="4">4</button>
+                    <button class="deck-btn" data-decks="6">6</button>
+                    <button class="deck-btn" data-decks="8">8</button>
+                </div>
+                <select id="deck-count" style="display: none;">
+                    <option value="1" selected>1</option>
+                    <option value="2">2</option>
+                    <option value="4">4</option>
+                    <option value="6">6</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>Deal Speed</label>
+                <div class="speed-control">
+                    <span class="speed-label">Fast</span>
+                    <input type="range" id="deal-speed" min="100" max="2000" value="1000" step="100">
+                    <span class="speed-label">Slow</span>
+                    <span id="speed-value">1000ms</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="left-sidebar">
+            <div class="strategy-guide">
+                <h3>Basic Strategy</h3>
+                <div class="strategy-recommendation">
+                    <div class="recommended-move">
+                        <span class="move-label">Recommended:</span>
+                        <span id="recommended-action" class="move-action">-</span>
+                    </div>
+                    <div class="move-explanation" id="move-explanation">
+                        Start a hand to see strategy recommendations
+                    </div>
+                </div>
+                <div class="strategy-feedback" id="strategy-feedback"></div>
+                <div class="strategy-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Correct Moves:</span>
+                        <span id="correct-moves" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Moves:</span>
+                        <span id="total-moves" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Accuracy:</span>
+                        <span id="accuracy" class="stat-value">-</span>
+                    </div>
+                </div>
+                <button id="reset-stats" class="btn">Reset Stats</button>
+                
+                <div class="wrong-moves-section">
+                    <h4>Recent Mistakes</h4>
+                    <div id="wrong-moves-list">
+                        <div class="no-mistakes">No mistakes yet - keep it up!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="left-content">
+            <h1>
+                <img src="mascot.png" alt="Blackjack Banshee" class="mascot">
+                Blackjack Banshee
+            </h1>
+            
+            <div class="toggle-buttons">
+                <button id="toggle-count" class="btn">Hide Count <span class="hotkey">[C]</span></button>
+                <button id="toggle-remaining" class="btn">Hide Cards <span class="hotkey">[Shift+C]</span></button>
+                <button id="toggle-strategy" class="btn">Hide Strategy <span class="hotkey">[B]</span></button>
+            </div>
+            
+            <div class="count-display">
+                <div class="count-section">
+                    <div class="count-item">
+                        <span class="count-label">HC:</span>
+                        <span id="hand-count" class="count-value">0</span>
+                    </div>
+                    <div class="count-separator">|</div>
+                    <div class="count-item">
+                        <span class="count-label">RC:</span>
+                        <span id="running-count" class="count-value">0</span>
+                    </div>
+                    <div class="count-separator">|</div>
+                    <div class="count-item">
+                        <span class="count-label">TC:</span>
+                        <span id="true-count" class="count-value">0.00</span>
+                    </div>
+                    <div class="count-separator">|</div>
+                    <div class="count-item">
+                        <span class="count-label">Decks:</span>
+                        <span id="decks-remaining" class="count-value">1.00</span>
+                    </div>
+                    <div class="count-separator">|</div>
+                    <div class="count-item">
+                        <span class="count-label">Time:</span>
+                        <span id="shoe-timer" class="count-value">0:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="remaining-cards">
+                <h3>Cards Remaining in Shoe</h3>
+                <div class="card-groups">
+                    <div class="card-group">
+                        <h4>Low Cards (2-6)</h4>
+                        <div class="card-count" id="low-cards-count">0</div>
+                        <div class="card-details" id="low-cards-details"></div>
+                    </div>
+                    <div class="card-group">
+                        <h4>Neutral Cards (7-9)</h4>
+                        <div class="card-count" id="neutral-cards-count">0</div>
+                        <div class="card-details" id="neutral-cards-details"></div>
+                    </div>
+                    <div class="card-group">
+                        <h4>High Cards (10-A)</h4>
+                        <div class="card-count" id="high-cards-count">0</div>
+                        <div class="card-details" id="high-cards-details"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-area">
+                <div class="dealer-section">
+                    <h2>Dealer</h2>
+                    <div id="dealer-cards" class="cards"></div>
+                    <div id="dealer-score" class="score">Score: 0</div>
+                </div>
+
+                <div class="player-section">
+                    <h2>Player</h2>
+                    <div id="player-cards" class="cards"></div>
+                    <div id="player-score" class="score">Score: 0</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="deal" class="btn btn-primary">Deal <span class="hotkey">[Space]</span></button>
+                <button id="hit" class="btn" disabled>Hit <span class="hotkey">[H]</span></button>
+                <button id="stand" class="btn" disabled>Stand <span class="hotkey">[S]</span></button>
+                <button id="double" class="btn" disabled>Double <span class="hotkey">[Z]</span></button>
+                <button id="split" class="btn" disabled>Split <span class="hotkey">[X]</span></button>
+            </div>
+            
+            <div class="shoe-controls">
+                <button id="reset-shoe" class="btn">Reset Shoe <span class="hotkey">[R]</span></button>
+            </div>
+
+            <div class="message" id="message"></div>
+        </div>
+
+        <div class="right-sidebar">
+            <div class="count-history">
+                <h3>Count History</h3>
+                <div id="history-list"></div>
+                <button id="clear-history" class="btn">Clear History</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
