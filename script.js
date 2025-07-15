@@ -1,5 +1,5 @@
 // Version info - updated during build/commit
-const VERSION = 'd06bb95'; // Will be replaced with git hash
+const VERSION = '4705bdf'; // Will be replaced with git hash
 
 // Card counting trainer
 class BlackjackGame {
@@ -22,6 +22,7 @@ class BlackjackGame {
         this.dealSpeed = 1000; // Default deal speed in ms
         this.shoeStartTime = null;
         this.shoeTimerInterval = null;
+        this.useDeviations = true; // Default to using count deviations
         
         // Strategy tracking
         this.correctMoves = 0;
@@ -83,6 +84,16 @@ class BlackjackGame {
         speedSlider.addEventListener('input', (e) => {
             this.dealSpeed = parseInt(e.target.value);
             speedValue.textContent = `${this.dealSpeed}ms`;
+        });
+        
+        // Deviations toggle
+        const deviationsToggle = document.getElementById('deviations-toggle');
+        deviationsToggle.addEventListener('change', (e) => {
+            this.useDeviations = e.target.checked;
+            // Update strategy recommendation if game is active
+            if (this.gameActive) {
+                this.updateStrategyRecommendation();
+            }
         });
         
         // Settings modal
@@ -1006,6 +1017,18 @@ class BlackjackGame {
         const dealerUpCard = this.dealerHand[0].rank;
         const dealerValue = dealerUpCard === 'J' || dealerUpCard === 'Q' || dealerUpCard === 'K' ? '10' : dealerUpCard;
         
+        // Calculate true count for deviations
+        const decksRemaining = this.shoe.length / 52;
+        const trueCount = decksRemaining > 0 ? this.runningCount / decksRemaining : 0;
+        
+        // Apply Illustrious 18 deviations if enabled
+        if (this.useDeviations) {
+            const deviation = this.checkDeviations(playerTotal, dealerValue, trueCount);
+            if (deviation) {
+                return deviation;
+            }
+        }
+        
         // Check for pairs first
         if (this.playerHand.length === 2 && this.playerHand[0].rank === this.playerHand[1].rank) {
             const pairRank = this.playerHand[0].rank === 'J' || this.playerHand[0].rank === 'Q' || this.playerHand[0].rank === 'K' ? 'T' : this.playerHand[0].rank;
@@ -1097,6 +1120,108 @@ class BlackjackGame {
         }
         
         return { action: 'HIT', explanation: 'Hit' };
+    }
+    
+    checkDeviations(playerTotal, dealerValue, trueCount) {
+        // Illustrious 18 deviations based on true count
+        const isHard = !this.hasAce(this.playerHand) || this.calculateScore(this.playerHand) === this.calculateHardScore(this.playerHand);
+        const isPair = this.playerHand.length === 2 && this.playerHand[0].rank === this.playerHand[1].rank;
+        
+        // Check for pair deviations first
+        if (isPair && (this.playerHand[0].rank === '10' || 
+            this.playerHand[0].rank === 'J' || 
+            this.playerHand[0].rank === 'Q' || 
+            this.playerHand[0].rank === 'K')) {
+            // 10,10 vs 5: Split at TC >= 5
+            if (dealerValue === '5' && trueCount >= 5) {
+                return { action: 'SPLIT', explanation: `Split 10,10 vs 5 (TC: ${trueCount.toFixed(2)} ≥ 5)` };
+            }
+            // 10,10 vs 6: Split at TC >= 4
+            if (dealerValue === '6' && trueCount >= 4) {
+                return { action: 'SPLIT', explanation: `Split 10,10 vs 6 (TC: ${trueCount.toFixed(2)} ≥ 4)` };
+            }
+        }
+        
+        // Hard hand deviations
+        if (isHard) {
+            // 16 vs 10: Stand at TC >= 0
+            if (playerTotal === 16 && dealerValue === '10' && trueCount >= 0) {
+                return { action: 'STAND', explanation: `Stand 16 vs 10 (TC: ${trueCount.toFixed(2)} ≥ 0)` };
+            }
+            
+            // 16 vs 9: Stand at TC >= 5
+            if (playerTotal === 16 && dealerValue === '9' && trueCount >= 5) {
+                return { action: 'STAND', explanation: `Stand 16 vs 9 (TC: ${trueCount.toFixed(2)} ≥ 5)` };
+            }
+            
+            // 15 vs 10: Stand at TC >= 4
+            if (playerTotal === 15 && dealerValue === '10' && trueCount >= 4) {
+                return { action: 'STAND', explanation: `Stand 15 vs 10 (TC: ${trueCount.toFixed(2)} ≥ 4)` };
+            }
+            
+            // 13 vs 2: Stand at TC >= -1
+            if (playerTotal === 13 && dealerValue === '2' && trueCount >= -1) {
+                return { action: 'STAND', explanation: `Stand 13 vs 2 (TC: ${trueCount.toFixed(2)} ≥ -1)` };
+            }
+            
+            // 13 vs 3: Hit at TC <= -2 (deviation from basic strategy stand)
+            if (playerTotal === 13 && dealerValue === '3' && trueCount <= -2) {
+                return { action: 'HIT', explanation: `Hit 13 vs 3 (TC: ${trueCount.toFixed(2)} ≤ -2)` };
+            }
+            
+            // 12 vs 2: Stand at TC >= 3
+            if (playerTotal === 12 && dealerValue === '2' && trueCount >= 3) {
+                return { action: 'STAND', explanation: `Stand 12 vs 2 (TC: ${trueCount.toFixed(2)} ≥ 3)` };
+            }
+            
+            // 12 vs 3: Stand at TC >= 2
+            if (playerTotal === 12 && dealerValue === '3' && trueCount >= 2) {
+                return { action: 'STAND', explanation: `Stand 12 vs 3 (TC: ${trueCount.toFixed(2)} ≥ 2)` };
+            }
+            
+            // 12 vs 4: Hit at TC < 0 (deviation from basic strategy stand)
+            if (playerTotal === 12 && dealerValue === '4' && trueCount < 0) {
+                return { action: 'HIT', explanation: `Hit 12 vs 4 (TC: ${trueCount.toFixed(2)} < 0)` };
+            }
+            
+            // 12 vs 5: Hit at TC <= -2 (deviation from basic strategy stand)
+            if (playerTotal === 12 && dealerValue === '5' && trueCount <= -2) {
+                return { action: 'HIT', explanation: `Hit 12 vs 5 (TC: ${trueCount.toFixed(2)} ≤ -2)` };
+            }
+            
+            // 12 vs 6: Hit at TC <= -1 (deviation from basic strategy stand)
+            if (playerTotal === 12 && dealerValue === '6' && trueCount <= -1) {
+                return { action: 'HIT', explanation: `Hit 12 vs 6 (TC: ${trueCount.toFixed(2)} ≤ -1)` };
+            }
+            
+            // 11 vs A: Double at TC >= 1 (can only double on first 2 cards)
+            if (playerTotal === 11 && dealerValue === 'A' && trueCount >= 1 && this.playerHand.length === 2) {
+                return { action: 'DOUBLE', explanation: `Double 11 vs A (TC: ${trueCount.toFixed(2)} ≥ 1)` };
+            }
+            
+            // 10 vs 10: Double at TC >= 4
+            if (playerTotal === 10 && dealerValue === '10' && trueCount >= 4 && this.playerHand.length === 2) {
+                return { action: 'DOUBLE', explanation: `Double 10 vs 10 (TC: ${trueCount.toFixed(2)} ≥ 4)` };
+            }
+            
+            // 10 vs A: Double at TC >= 4
+            if (playerTotal === 10 && dealerValue === 'A' && trueCount >= 4 && this.playerHand.length === 2) {
+                return { action: 'DOUBLE', explanation: `Double 10 vs A (TC: ${trueCount.toFixed(2)} ≥ 4)` };
+            }
+            
+            // 9 vs 2: Double at TC >= 1
+            if (playerTotal === 9 && dealerValue === '2' && trueCount >= 1 && this.playerHand.length === 2) {
+                return { action: 'DOUBLE', explanation: `Double 9 vs 2 (TC: ${trueCount.toFixed(2)} ≥ 1)` };
+            }
+            
+            // 9 vs 7: Double at TC >= 3
+            if (playerTotal === 9 && dealerValue === '7' && trueCount >= 3 && this.playerHand.length === 2) {
+                return { action: 'DOUBLE', explanation: `Double 9 vs 7 (TC: ${trueCount.toFixed(2)} ≥ 3)` };
+            }
+        }
+        
+        // No deviation applies, return null to use basic strategy
+        return null;
     }
     
     updateStrategyRecommendation() {
