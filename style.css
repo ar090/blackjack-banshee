@@ -1762,8 +1762,8 @@ input[type="range"]::-moz-range-thumb:hover {
     }
     
     .left-content h1 {
-        font-size: 1.5em;
-        padding: 20px 10px 10px;
+        font-size: 1.2em;
+        padding: 10px 10px 5px;
         margin: 0;
         text-align: center;
         flex-shrink: 0;
@@ -1771,8 +1771,8 @@ input[type="range"]::-moz-range-thumb:hover {
     }
     
     .left-content h1 .mascot {
-        height: 30px;
-        margin-right: 5px;
+        height: 20px;
+        margin-right: 3px;
     }
     
     /* Mobile toggle buttons */
@@ -1782,8 +1782,8 @@ input[type="range"]::-moz-range-thumb:hover {
     
     /* Mobile count display */
     .count-display {
-        padding: 10px;
-        margin: 0 10px 15px;
+        padding: 8px;
+        margin: 0 10px 10px;
         flex-shrink: 0;
         background: rgba(96, 97, 97, 0.2);
         border-radius: 15px;
@@ -1817,21 +1817,21 @@ input[type="range"]::-moz-range-thumb:hover {
         justify-content: space-between;
         padding: 10px;
         min-height: 0;
-        gap: 10px;
+        gap: 5px;
     }
     
     .dealer-section, .player-section {
         background: rgba(96, 97, 97, 0.2);
         border-radius: 15px;
-        padding: 15px;
+        padding: 10px;
         margin: 0;
         flex: 0 0 auto;
-        min-height: 150px;
+        min-height: 120px;
     }
     
     .dealer-section h2, .player-section h2 {
-        font-size: 1em;
-        margin-bottom: 10px;
+        font-size: 0.9em;
+        margin-bottom: 5px;
         text-align: center;
     }
     
@@ -1861,8 +1861,8 @@ input[type="range"]::-moz-range-thumb:hover {
     }
     
     .score {
-        font-size: 0.9em;
-        margin-top: 5px;
+        font-size: 0.85em;
+        margin-top: 3px;
         text-align: center;
     }
     
@@ -1908,22 +1908,22 @@ input[type="range"]::-moz-range-thumb:hover {
     /* Mobile controls */
     .controls {
         flex-shrink: 0;
-        padding: 20px;
-        gap: 10px;
+        padding: 10px;
+        gap: 6px;
         display: flex;
         flex-direction: column;
         margin-top: auto;
     }
     
     .controls .btn {
-        padding: 15px;
-        font-size: 1em;
+        padding: 10px;
+        font-size: 0.9em;
         font-weight: 600;
         min-width: auto;
-        height: 50px;
-        border-radius: 25px;
+        height: 40px;
+        border-radius: 20px;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1933,7 +1933,7 @@ input[type="range"]::-moz-range-thumb:hover {
     .action-buttons {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 6px;
     }
     
     /* Deal button takes full width when visible */
@@ -1958,10 +1958,10 @@ input[type="range"]::-moz-range-thumb:hover {
     /* Make deal button more prominent when it's the only button */
     .game-idle #deal {
         display: block !important;
-        height: 60px;
-        font-size: 1.2em;
+        height: 45px;
+        font-size: 1em;
         font-weight: 700;
-        box-shadow: 0 8px 25px rgba(122, 184, 95, 0.3);
+        box-shadow: 0 6px 20px rgba(122, 184, 95, 0.3);
     }
     
     .controls .hotkey {

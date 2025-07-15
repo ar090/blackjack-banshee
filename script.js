@@ -1,5 +1,5 @@
 // Version info - updated during build/commit
-const VERSION = 'c208f84'; // Will be replaced with git hash
+const VERSION = '4a9cbb1'; // Will be replaced with git hash
 
 // Card counting trainer
 class BlackjackGame {
@@ -273,9 +273,22 @@ class BlackjackGame {
         const decksRemaining = (this.shoe.length / 52);
         const trueCount = decksRemaining > 0 ? this.runningCount / decksRemaining : 0;
         
+        // Update desktop
         document.getElementById('running-count').textContent = this.runningCount;
         document.getElementById('true-count').textContent = trueCount.toFixed(2);
         document.getElementById('decks-remaining').textContent = decksRemaining.toFixed(2);
+        
+        // Also update mobile directly
+        const mobileSection = document.querySelector('.mobile-section[data-section="count"]');
+        if (mobileSection) {
+            const mobileRunning = mobileSection.querySelector('#running-count');
+            const mobileTrue = mobileSection.querySelector('#true-count');
+            const mobileDecks = mobileSection.querySelector('#decks-remaining');
+            
+            if (mobileRunning) mobileRunning.textContent = this.runningCount;
+            if (mobileTrue) mobileTrue.textContent = trueCount.toFixed(2);
+            if (mobileDecks) mobileDecks.textContent = decksRemaining.toFixed(2);
+        }
         
         // Update hand count
         this.updateHandCount();
@@ -344,6 +357,18 @@ class BlackjackGame {
         document.getElementById('neutral-cards-count').textContent = neutralCards;
         document.getElementById('high-cards-count').textContent = highCards;
         
+        // Also update mobile
+        const mobileCards = document.querySelector('.mobile-section[data-section="cards"]');
+        if (mobileCards) {
+            const mobileLow = mobileCards.querySelector('#low-cards-count');
+            const mobileNeutral = mobileCards.querySelector('#neutral-cards-count');
+            const mobileHigh = mobileCards.querySelector('#high-cards-count');
+            
+            if (mobileLow) mobileLow.textContent = lowCards;
+            if (mobileNeutral) mobileNeutral.textContent = neutralCards;
+            if (mobileHigh) mobileHigh.textContent = highCards;
+        }
+        
         // Update details
         const lowCardsDetails = document.getElementById('low-cards-details');
         const neutralCardsDetails = document.getElementById('neutral-cards-details');
@@ -387,6 +412,17 @@ class BlackjackGame {
                 `;
             }
         });
+        
+        // Sync details to mobile
+        if (mobileCards) {
+            const mobileLowDetails = mobileCards.querySelector('#low-cards-details');
+            const mobileNeutralDetails = mobileCards.querySelector('#neutral-cards-details');
+            const mobileHighDetails = mobileCards.querySelector('#high-cards-details');
+            
+            if (mobileLowDetails) mobileLowDetails.innerHTML = lowCardsDetails.innerHTML;
+            if (mobileNeutralDetails) mobileNeutralDetails.innerHTML = neutralCardsDetails.innerHTML;
+            if (mobileHighDetails) mobileHighDetails.innerHTML = highCardsDetails.innerHTML;
+        }
     }
 
     toggleCount() {
@@ -452,6 +488,12 @@ class BlackjackGame {
             `;
             historyList.appendChild(div);
         });
+        
+        // Also update mobile history
+        const mobileHistory = document.querySelector('.mobile-section[data-section="count"] #history-list');
+        if (mobileHistory) {
+            mobileHistory.innerHTML = historyList.innerHTML;
+        }
     }
 
     clearHistory() {
@@ -1124,6 +1166,18 @@ class BlackjackGame {
         document.getElementById('total-moves').textContent = this.totalMoves;
         const accuracy = this.totalMoves > 0 ? Math.round((this.correctMoves / this.totalMoves) * 100) : 0;
         document.getElementById('accuracy').textContent = accuracy + '%';
+        
+        // Also update mobile
+        const mobileStrategy = document.querySelector('.mobile-section[data-section="strategy"]');
+        if (mobileStrategy) {
+            const mobileCorrect = mobileStrategy.querySelector('#correct-moves');
+            const mobileTotal = mobileStrategy.querySelector('#total-moves');
+            const mobileAccuracy = mobileStrategy.querySelector('#accuracy');
+            
+            if (mobileCorrect) mobileCorrect.textContent = this.correctMoves;
+            if (mobileTotal) mobileTotal.textContent = this.totalMoves;
+            if (mobileAccuracy) mobileAccuracy.textContent = accuracy + '%';
+        }
     }
     
     resetStrategyStats() {
@@ -1190,6 +1244,12 @@ class BlackjackGame {
             moreDiv.className = 'more-mistakes';
             moreDiv.textContent = `... and ${this.wrongMoves.length - 5} more mistakes`;
             container.appendChild(moreDiv);
+        }
+        
+        // Also update mobile wrong moves
+        const mobileContainer = document.querySelector('.mobile-section[data-section="strategy"] #wrong-moves-list');
+        if (mobileContainer) {
+            mobileContainer.innerHTML = container.innerHTML;
         }
     }
     
@@ -1295,8 +1355,15 @@ class BlackjackGame {
         this.updateScores();
         await new Promise(resolve => setTimeout(resolve, this.dealSpeed));
         
-        // Dealer draws to 17 with delays
-        while (this.calculateScore(this.dealerHand) < 17) {
+        // Check if player has blackjack (single hand only)
+        const playerHasBlackjack = this.playerHands.length === 0 && 
+                                  this.calculateScore(this.playerHand) === 21 && 
+                                  this.playerHand.length === 2;
+        
+        // If player has blackjack, dealer doesn't draw
+        if (!playerHasBlackjack) {
+            // Dealer draws to 17 with delays
+            while (this.calculateScore(this.dealerHand) < 17) {
             const card = this.drawCard();
             if (!card) break;
             this.dealerHand.push(card);
@@ -1313,6 +1380,7 @@ class BlackjackGame {
             
             this.updateScores();
             await new Promise(resolve => setTimeout(resolve, this.dealSpeed));
+            }
         }
         
         // Determine winner(s)
@@ -1353,8 +1421,16 @@ class BlackjackGame {
         } else {
             // Normal single hand
             const playerScore = this.calculateScore(this.playerHand);
+            const playerHasBlackjack = playerScore === 21 && this.playerHand.length === 2;
+            const dealerHasBlackjack = dealerScore === 21 && this.dealerHand.length === 2;
             
-            if (dealerScore > 21) {
+            if (playerHasBlackjack && dealerHasBlackjack) {
+                this.endGame('push', 'Push! Both have blackjack.');
+            } else if (playerHasBlackjack) {
+                this.endGame('win', 'Blackjack! You win!');
+            } else if (dealerHasBlackjack) {
+                this.endGame('lose', 'Dealer blackjack. You lose.');
+            } else if (dealerScore > 21) {
                 this.endGame('win', 'Dealer bust! You win!');
             } else if (playerScore > dealerScore) {
                 this.endGame('win', 'You win!');
