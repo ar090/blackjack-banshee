@@ -1,5 +1,5 @@
 // Version info - updated during build/commit
-const VERSION = 'b779800'; // Will be replaced with git hash
+const VERSION = '53988b6'; // Will be replaced with git hash
 
 // Card counting trainer
 class BlackjackGame {
@@ -19,7 +19,7 @@ class BlackjackGame {
         this.countHistory = [];
         this.gameActive = false;
         this.dealerHoleCardRevealed = false;
-        this.dealSpeed = 1000; // Default deal speed in ms
+        this.dealSpeed = 1200; // Default deal speed in ms (Normal speed)
         this.shoeStartTime = null;
         this.shoeTimerInterval = null;
         this.useDeviations = true; // Default to using count deviations
@@ -87,9 +87,40 @@ class BlackjackGame {
         // Deal speed slider
         const speedSlider = document.getElementById('deal-speed');
         const speedValue = document.getElementById('speed-value');
+        
+        // Map slider value (1-10) to milliseconds (reversed: 10 = fast, 1 = slow)
+        const speedToMs = (sliderValue) => {
+            const speeds = {
+                1: 2000,  // Slowest
+                2: 1800,
+                3: 1600,
+                4: 1400,
+                5: 1200,  // Normal
+                6: 1000,
+                7: 800,
+                8: 600,
+                9: 400,
+                10: 200   // Fastest
+            };
+            return speeds[sliderValue] || 1000;
+        };
+        
+        // Map slider value to display text
+        const speedToText = (sliderValue) => {
+            if (sliderValue <= 2) return 'Very Slow';
+            if (sliderValue <= 4) return 'Slow';
+            if (sliderValue <= 6) return 'Normal';
+            if (sliderValue <= 8) return 'Fast';
+            return 'Very Fast';
+        };
+        
+        // Set initial speed
+        this.dealSpeed = speedToMs(5); // Default to normal speed
+        
         speedSlider.addEventListener('input', (e) => {
-            this.dealSpeed = parseInt(e.target.value);
-            speedValue.textContent = `${this.dealSpeed}ms`;
+            const sliderValue = parseInt(e.target.value);
+            this.dealSpeed = speedToMs(sliderValue);
+            speedValue.textContent = speedToText(sliderValue);
         });
         
         // Insurance toggle
@@ -795,8 +826,9 @@ class BlackjackGame {
         // Clear the main player hand
         this.playerHand = this.playerHands[0];
         
-        // Show split indicator
+        // Show split indicator briefly
         this.showMessage('Playing first hand...');
+        setTimeout(() => this.showMessage(''), 1500);
         
         // Render the split hands
         this.renderSplitHands();
@@ -829,12 +861,15 @@ class BlackjackGame {
         const container = document.getElementById('player-cards');
         container.innerHTML = '';
         container.style.display = 'flex';
-        container.style.gap = '40px';
+        container.style.gap = window.innerWidth <= 768 ? '15px' : '40px';
         container.style.justifyContent = 'center';
         
         this.playerHands.forEach((hand, index) => {
             const handDiv = document.createElement('div');
             handDiv.className = 'split-hand';
+            if (index === this.currentHandIndex) {
+                handDiv.classList.add('active-hand');
+            }
             handDiv.style.position = 'relative';
             
             // Add hand indicator
@@ -852,7 +887,6 @@ class BlackjackGame {
             if (index === this.currentHandIndex) {
                 indicator.style.color = '#7ab85f';
                 indicator.style.textShadow = '0 0 10px rgba(122, 184, 95, 0.5)';
-                handDiv.style.transform = 'scale(1.05)';
             }
             
             handDiv.appendChild(indicator);
@@ -879,6 +913,7 @@ class BlackjackGame {
             this.currentHandIndex++;
             this.playerHand = this.playerHands[this.currentHandIndex];
             this.showMessage(`Playing hand ${this.currentHandIndex + 1}...`);
+            setTimeout(() => this.showMessage(''), 1500);
             this.renderSplitHands();
             this.updateScores();
             this.updateButtons();
@@ -905,7 +940,7 @@ class BlackjackGame {
             this.updateCountDisplay();
             this.dealerHoleCardRevealed = true;
             
-            // Show hole card
+            // Show hole card on desktop
             const dealerCardsContainer = document.getElementById('dealer-cards');
             const holeCardElement = dealerCardsContainer.children[1];
             if (holeCardElement) {
@@ -914,6 +949,19 @@ class BlackjackGame {
                 holeCardElement.setAttribute('data-rank', holeCard.rank);
                 holeCardElement.setAttribute('data-suit', holeCard.suit);
                 holeCardElement.innerHTML = newCard.innerHTML;
+            }
+            
+            // Also show hole card on mobile
+            const mobileDealerCards = document.querySelector('.mobile-section[data-section="game"] #dealer-cards');
+            if (mobileDealerCards) {
+                const mobileHoleCard = mobileDealerCards.children[1];
+                if (mobileHoleCard) {
+                    const newCard = this.createCardElement(holeCard, false);
+                    mobileHoleCard.className = newCard.className;
+                    mobileHoleCard.setAttribute('data-rank', holeCard.rank);
+                    mobileHoleCard.setAttribute('data-suit', holeCard.suit);
+                    mobileHoleCard.innerHTML = newCard.innerHTML;
+                }
             }
             this.updateScores();
             
@@ -1247,8 +1295,18 @@ class BlackjackGame {
     
     updateStrategyRecommendation() {
         const strategy = this.getBasicStrategyMove();
-        document.getElementById('recommended-action').textContent = strategy.action;
-        document.getElementById('move-explanation').textContent = strategy.explanation;
+        
+        // Update desktop
+        const desktopAction = document.getElementById('recommended-action');
+        const desktopExplanation = document.getElementById('move-explanation');
+        if (desktopAction) desktopAction.textContent = strategy.action;
+        if (desktopExplanation) desktopExplanation.textContent = strategy.explanation;
+        
+        // Also update mobile directly
+        const mobileAction = document.querySelector('.mobile-section[data-section="strategy"] #recommended-action');
+        const mobileExplanation = document.querySelector('.mobile-section[data-section="strategy"] #move-explanation');
+        if (mobileAction) mobileAction.textContent = strategy.action;
+        if (mobileExplanation) mobileExplanation.textContent = strategy.explanation;
     }
     
     checkPlayerAction(action) {
@@ -1297,13 +1355,29 @@ class BlackjackGame {
     }
     
     showStrategyFeedback(correct, message) {
+        // Update desktop
         const feedbackEl = document.getElementById('strategy-feedback');
-        feedbackEl.textContent = message;
-        feedbackEl.className = 'strategy-feedback ' + (correct ? 'correct' : 'incorrect');
+        if (feedbackEl) {
+            feedbackEl.textContent = message;
+            feedbackEl.className = 'strategy-feedback ' + (correct ? 'correct' : 'incorrect');
+        }
+        
+        // Update mobile
+        const mobileFeedback = document.querySelector('.mobile-section[data-section="strategy"] #strategy-feedback');
+        if (mobileFeedback) {
+            mobileFeedback.textContent = message;
+            mobileFeedback.className = 'strategy-feedback ' + (correct ? 'correct' : 'incorrect');
+        }
         
         setTimeout(() => {
-            feedbackEl.textContent = '';
-            feedbackEl.className = 'strategy-feedback';
+            if (feedbackEl) {
+                feedbackEl.textContent = '';
+                feedbackEl.className = 'strategy-feedback';
+            }
+            if (mobileFeedback) {
+                mobileFeedback.textContent = '';
+                mobileFeedback.className = 'strategy-feedback';
+            }
         }, 3000);
     }
     
@@ -1332,8 +1406,19 @@ class BlackjackGame {
         this.wrongMoves = [];
         this.updateStrategyStats();
         this.updateWrongMovesDisplay();
-        document.getElementById('strategy-feedback').textContent = '';
-        document.getElementById('strategy-feedback').className = 'strategy-feedback';
+        // Clear desktop feedback
+        const desktopFeedback = document.getElementById('strategy-feedback');
+        if (desktopFeedback) {
+            desktopFeedback.textContent = '';
+            desktopFeedback.className = 'strategy-feedback';
+        }
+        
+        // Clear mobile feedback
+        const mobileFeedback = document.querySelector('.mobile-section[data-section="strategy"] #strategy-feedback');
+        if (mobileFeedback) {
+            mobileFeedback.textContent = '';
+            mobileFeedback.className = 'strategy-feedback';
+        }
     }
     
     getHandString(hand) {
@@ -1592,6 +1677,19 @@ class BlackjackGame {
             // Copy innerHTML
             holeCardElement.innerHTML = newCard.innerHTML;
         }
+        
+        // Also update mobile dealer cards
+        const mobileDealerCards = document.querySelector('.mobile-section[data-section="game"] #dealer-cards');
+        if (mobileDealerCards) {
+            const mobileHoleCard = mobileDealerCards.children[1];
+            if (mobileHoleCard) {
+                const newCard = this.createCardElement(holeCard, false);
+                mobileHoleCard.className = newCard.className;
+                mobileHoleCard.setAttribute('data-rank', holeCard.rank);
+                mobileHoleCard.setAttribute('data-suit', holeCard.suit);
+                mobileHoleCard.innerHTML = newCard.innerHTML;
+            }
+        }
         this.updateScores();
         await new Promise(resolve => setTimeout(resolve, this.dealSpeed));
         
@@ -1613,9 +1711,18 @@ class BlackjackGame {
             newCardElement.classList.add('new-card');
             dealerCardsContainer.appendChild(newCardElement);
             
+            // Also add to mobile
+            if (mobileDealerCards) {
+                const mobileNewCard = this.createCardElement(card);
+                mobileNewCard.classList.add('new-card');
+                mobileDealerCards.appendChild(mobileNewCard);
+            }
+            
             // Remove animation class after animation completes
             setTimeout(() => {
                 newCardElement.classList.remove('new-card');
+                const mobileCard = mobileDealerCards?.lastElementChild;
+                if (mobileCard) mobileCard.classList.remove('new-card');
             }, 500);
             
             this.updateScores();
