@@ -137,6 +137,16 @@
                 </div>
             </div>
             <div class="setting-item">
+                <label>Insurance</label>
+                <div class="toggle-wrapper">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="insurance-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-description">Enable insurance betting</span>
+                </div>
+            </div>
+            <div class="setting-item">
                 <label>Count Deviations</label>
                 <div class="toggle-wrapper">
                     <label class="toggle-switch">
@@ -162,7 +172,17 @@
     <div class="main-container">
         <div class="left-sidebar">
             <div class="strategy-guide">
-                <h3>Basic Strategy</h3>
+                <div class="strategy-header">
+                    <h3>Basic Strategy</h3>
+                    <div class="strategy-help-icons">
+                        <button class="help-icon" data-modal="basic-strategy-modal" title="Basic Strategy Guide">
+                            <i class="ph-bold ph-question"></i>
+                        </button>
+                        <button class="help-icon" data-modal="deviations-modal" title="Deviations Guide">
+                            <i class="ph-bold ph-chart-line"></i>
+                        </button>
+                    </div>
+                </div>
                 <div class="strategy-recommendation">
                     <div class="recommended-move">
                         <span class="move-label">Recommended:</span>
@@ -281,6 +301,16 @@
                     <button id="double" class="btn" disabled>Double <span class="hotkey">[Z]</span></button>
                     <button id="split" class="btn" disabled>Split <span class="hotkey">[X]</span></button>
                 </div>
+                <div class="insurance-section" id="insurance-section" style="display: none;">
+                    <div class="insurance-prompt">
+                        <span class="insurance-text">Insurance?</span>
+                        <span class="insurance-recommendation" id="insurance-recommendation"></span>
+                    </div>
+                    <div class="insurance-buttons">
+                        <button id="take-insurance" class="btn btn-insurance">Y <span class="hotkey">[Y]</span></button>
+                        <button id="decline-insurance" class="btn btn-insurance">N <span class="hotkey">[N]</span></button>
+                    </div>
+                </div>
             </div>
             
             <div class="shoe-controls">
@@ -347,6 +377,32 @@
         <!-- Cards Section -->
         <div class="mobile-section mobile-cards-section" data-section="cards">
             <!-- This will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Basic Strategy Modal -->
+    <div class="strategy-modal" id="basic-strategy-modal">
+        <div class="strategy-modal-content">
+            <div class="strategy-modal-header">
+                <h2>Basic Strategy Guide</h2>
+                <button class="strategy-modal-close">&times;</button>
+            </div>
+            <div class="strategy-modal-body">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Deviations Modal -->
+    <div class="strategy-modal" id="deviations-modal">
+        <div class="strategy-modal-content">
+            <div class="strategy-modal-header">
+                <h2>Illustrious 18 Deviations</h2>
+                <button class="strategy-modal-close">&times;</button>
+            </div>
+            <div class="strategy-modal-body">
+                <!-- Content will be populated by JavaScript -->
+            </div>
         </div>
     </div>
 

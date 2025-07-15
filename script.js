@@ -1,5 +1,5 @@
 // Version info - updated during build/commit
-const VERSION = '2e4d032'; // Will be replaced with git hash
+const VERSION = '893b54c'; // Will be replaced with git hash
 
 // Card counting trainer
 class BlackjackGame {
@@ -23,6 +23,9 @@ class BlackjackGame {
         this.shoeStartTime = null;
         this.shoeTimerInterval = null;
         this.useDeviations = true; // Default to using count deviations
+        this.insuranceEnabled = true; // Default to allowing insurance
+        this.insuranceOffered = false; // Track if insurance was offered this hand
+        this.insuranceTaken = false; // Track if player took insurance
         
         // Strategy tracking
         this.correctMoves = 0;
@@ -35,6 +38,7 @@ class BlackjackGame {
         this.initializeBasicStrategy();
         this.updateWrongMovesDisplay();
         this.initializeMobileLayout();
+        this.initializeStrategyModals();
         
         // Set initial game-idle state
         const controls = document.querySelector('.controls');
@@ -51,6 +55,8 @@ class BlackjackGame {
         document.getElementById('split').addEventListener('click', () => this.split());
         document.getElementById('reset-shoe').addEventListener('click', () => this.resetShoe());
         document.getElementById('toggle-count').addEventListener('click', () => this.toggleCount());
+        document.getElementById('take-insurance').addEventListener('click', () => this.takeInsurance());
+        document.getElementById('decline-insurance').addEventListener('click', () => this.declineInsurance());
         document.getElementById('toggle-remaining').addEventListener('click', () => this.toggleRemainingCards());
         document.getElementById('toggle-strategy').addEventListener('click', () => this.toggleStrategy());
         document.getElementById('clear-history').addEventListener('click', () => this.clearHistory());
@@ -84,6 +90,12 @@ class BlackjackGame {
         speedSlider.addEventListener('input', (e) => {
             this.dealSpeed = parseInt(e.target.value);
             speedValue.textContent = `${this.dealSpeed}ms`;
+        });
+        
+        // Insurance toggle
+        const insuranceToggle = document.getElementById('insurance-toggle');
+        insuranceToggle.addEventListener('change', (e) => {
+            this.insuranceEnabled = e.target.checked;
         });
         
         // Deviations toggle
@@ -145,6 +157,12 @@ class BlackjackGame {
                     break;
                 case 'x':
                     if (this.gameActive && this.playerHand.length === 2 && this.canSplit()) this.split();
+                    break;
+                case 'y':
+                    if (this.insuranceOffered && !this.insuranceTaken) this.takeInsurance();
+                    break;
+                case 'n':
+                    if (this.insuranceOffered && !this.insuranceTaken) this.declineInsurance();
                     break;
                 case 'r':
                     this.resetShoe();
@@ -1127,96 +1145,99 @@ class BlackjackGame {
         const isHard = !this.hasAce(this.playerHand) || this.calculateScore(this.playerHand) === this.calculateHardScore(this.playerHand);
         const isPair = this.playerHand.length === 2 && this.playerHand[0].rank === this.playerHand[1].rank;
         
+        // Round true count for practical decision making
+        const roundedTC = Math.round(trueCount);
+        
         // Check for pair deviations first
         if (isPair && (this.playerHand[0].rank === '10' || 
             this.playerHand[0].rank === 'J' || 
             this.playerHand[0].rank === 'Q' || 
             this.playerHand[0].rank === 'K')) {
             // 10,10 vs 5: Split at TC >= 5
-            if (dealerValue === '5' && trueCount >= 5) {
-                return { action: 'SPLIT', explanation: `Split 10,10 vs 5 (TC: ${trueCount.toFixed(2)} ≥ 5)` };
+            if (dealerValue === '5' && roundedTC >= 5) {
+                return { action: 'SPLIT', explanation: `Split 10,10 vs 5 (TC: ${roundedTC} ≥ 5)` };
             }
             // 10,10 vs 6: Split at TC >= 4
-            if (dealerValue === '6' && trueCount >= 4) {
-                return { action: 'SPLIT', explanation: `Split 10,10 vs 6 (TC: ${trueCount.toFixed(2)} ≥ 4)` };
+            if (dealerValue === '6' && roundedTC >= 4) {
+                return { action: 'SPLIT', explanation: `Split 10,10 vs 6 (TC: ${roundedTC} ≥ 4)` };
             }
         }
         
         // Hard hand deviations
         if (isHard) {
             // 16 vs 10: Stand at TC >= 0
-            if (playerTotal === 16 && dealerValue === '10' && trueCount >= 0) {
-                return { action: 'STAND', explanation: `Stand 16 vs 10 (TC: ${trueCount.toFixed(2)} ≥ 0)` };
+            if (playerTotal === 16 && dealerValue === '10' && roundedTC >= 0) {
+                return { action: 'STAND', explanation: `Stand 16 vs 10 (TC: ${roundedTC} ≥ 0)` };
             }
             
             // 16 vs 9: Stand at TC >= 5
-            if (playerTotal === 16 && dealerValue === '9' && trueCount >= 5) {
-                return { action: 'STAND', explanation: `Stand 16 vs 9 (TC: ${trueCount.toFixed(2)} ≥ 5)` };
+            if (playerTotal === 16 && dealerValue === '9' && roundedTC >= 5) {
+                return { action: 'STAND', explanation: `Stand 16 vs 9 (TC: ${roundedTC} ≥ 5)` };
             }
             
             // 15 vs 10: Stand at TC >= 4
-            if (playerTotal === 15 && dealerValue === '10' && trueCount >= 4) {
-                return { action: 'STAND', explanation: `Stand 15 vs 10 (TC: ${trueCount.toFixed(2)} ≥ 4)` };
+            if (playerTotal === 15 && dealerValue === '10' && roundedTC >= 4) {
+                return { action: 'STAND', explanation: `Stand 15 vs 10 (TC: ${roundedTC} ≥ 4)` };
             }
             
             // 13 vs 2: Stand at TC >= -1
-            if (playerTotal === 13 && dealerValue === '2' && trueCount >= -1) {
-                return { action: 'STAND', explanation: `Stand 13 vs 2 (TC: ${trueCount.toFixed(2)} ≥ -1)` };
+            if (playerTotal === 13 && dealerValue === '2' && roundedTC >= -1) {
+                return { action: 'STAND', explanation: `Stand 13 vs 2 (TC: ${roundedTC} ≥ -1)` };
             }
             
             // 13 vs 3: Hit at TC <= -2 (deviation from basic strategy stand)
-            if (playerTotal === 13 && dealerValue === '3' && trueCount <= -2) {
-                return { action: 'HIT', explanation: `Hit 13 vs 3 (TC: ${trueCount.toFixed(2)} ≤ -2)` };
+            if (playerTotal === 13 && dealerValue === '3' && roundedTC <= -2) {
+                return { action: 'HIT', explanation: `Hit 13 vs 3 (TC: ${roundedTC} ≤ -2)` };
             }
             
             // 12 vs 2: Stand at TC >= 3
-            if (playerTotal === 12 && dealerValue === '2' && trueCount >= 3) {
-                return { action: 'STAND', explanation: `Stand 12 vs 2 (TC: ${trueCount.toFixed(2)} ≥ 3)` };
+            if (playerTotal === 12 && dealerValue === '2' && roundedTC >= 3) {
+                return { action: 'STAND', explanation: `Stand 12 vs 2 (TC: ${roundedTC} ≥ 3)` };
             }
             
             // 12 vs 3: Stand at TC >= 2
-            if (playerTotal === 12 && dealerValue === '3' && trueCount >= 2) {
-                return { action: 'STAND', explanation: `Stand 12 vs 3 (TC: ${trueCount.toFixed(2)} ≥ 2)` };
+            if (playerTotal === 12 && dealerValue === '3' && roundedTC >= 2) {
+                return { action: 'STAND', explanation: `Stand 12 vs 3 (TC: ${roundedTC} ≥ 2)` };
             }
             
             // 12 vs 4: Hit at TC < 0 (deviation from basic strategy stand)
-            if (playerTotal === 12 && dealerValue === '4' && trueCount < 0) {
-                return { action: 'HIT', explanation: `Hit 12 vs 4 (TC: ${trueCount.toFixed(2)} < 0)` };
+            if (playerTotal === 12 && dealerValue === '4' && roundedTC < 0) {
+                return { action: 'HIT', explanation: `Hit 12 vs 4 (TC: ${roundedTC} < 0)` };
             }
             
             // 12 vs 5: Hit at TC <= -2 (deviation from basic strategy stand)
-            if (playerTotal === 12 && dealerValue === '5' && trueCount <= -2) {
-                return { action: 'HIT', explanation: `Hit 12 vs 5 (TC: ${trueCount.toFixed(2)} ≤ -2)` };
+            if (playerTotal === 12 && dealerValue === '5' && roundedTC <= -2) {
+                return { action: 'HIT', explanation: `Hit 12 vs 5 (TC: ${roundedTC} ≤ -2)` };
             }
             
             // 12 vs 6: Hit at TC <= -1 (deviation from basic strategy stand)
-            if (playerTotal === 12 && dealerValue === '6' && trueCount <= -1) {
-                return { action: 'HIT', explanation: `Hit 12 vs 6 (TC: ${trueCount.toFixed(2)} ≤ -1)` };
+            if (playerTotal === 12 && dealerValue === '6' && roundedTC <= -1) {
+                return { action: 'HIT', explanation: `Hit 12 vs 6 (TC: ${roundedTC} ≤ -1)` };
             }
             
             // 11 vs A: Double at TC >= 1 (can only double on first 2 cards)
-            if (playerTotal === 11 && dealerValue === 'A' && trueCount >= 1 && this.playerHand.length === 2) {
-                return { action: 'DOUBLE', explanation: `Double 11 vs A (TC: ${trueCount.toFixed(2)} ≥ 1)` };
+            if (playerTotal === 11 && dealerValue === 'A' && roundedTC >= 1 && this.playerHand.length === 2) {
+                return { action: 'DOUBLE', explanation: `Double 11 vs A (TC: ${roundedTC} ≥ 1)` };
             }
             
             // 10 vs 10: Double at TC >= 4
-            if (playerTotal === 10 && dealerValue === '10' && trueCount >= 4 && this.playerHand.length === 2) {
-                return { action: 'DOUBLE', explanation: `Double 10 vs 10 (TC: ${trueCount.toFixed(2)} ≥ 4)` };
+            if (playerTotal === 10 && dealerValue === '10' && roundedTC >= 4 && this.playerHand.length === 2) {
+                return { action: 'DOUBLE', explanation: `Double 10 vs 10 (TC: ${roundedTC} ≥ 4)` };
             }
             
             // 10 vs A: Double at TC >= 4
-            if (playerTotal === 10 && dealerValue === 'A' && trueCount >= 4 && this.playerHand.length === 2) {
-                return { action: 'DOUBLE', explanation: `Double 10 vs A (TC: ${trueCount.toFixed(2)} ≥ 4)` };
+            if (playerTotal === 10 && dealerValue === 'A' && roundedTC >= 4 && this.playerHand.length === 2) {
+                return { action: 'DOUBLE', explanation: `Double 10 vs A (TC: ${roundedTC} ≥ 4)` };
             }
             
             // 9 vs 2: Double at TC >= 1
-            if (playerTotal === 9 && dealerValue === '2' && trueCount >= 1 && this.playerHand.length === 2) {
-                return { action: 'DOUBLE', explanation: `Double 9 vs 2 (TC: ${trueCount.toFixed(2)} ≥ 1)` };
+            if (playerTotal === 9 && dealerValue === '2' && roundedTC >= 1 && this.playerHand.length === 2) {
+                return { action: 'DOUBLE', explanation: `Double 9 vs 2 (TC: ${roundedTC} ≥ 1)` };
             }
             
             // 9 vs 7: Double at TC >= 3
-            if (playerTotal === 9 && dealerValue === '7' && trueCount >= 3 && this.playerHand.length === 2) {
-                return { action: 'DOUBLE', explanation: `Double 9 vs 7 (TC: ${trueCount.toFixed(2)} ≥ 3)` };
+            if (playerTotal === 9 && dealerValue === '7' && roundedTC >= 3 && this.playerHand.length === 2) {
+                return { action: 'DOUBLE', explanation: `Double 9 vs 7 (TC: ${roundedTC} ≥ 3)` };
             }
         }
         
@@ -1388,6 +1409,100 @@ class BlackjackGame {
         } else {
             strategyGuide.classList.add('hidden');
             toggleBtn.innerHTML = 'Show Strategy <span class="hotkey">[B]</span>';
+        }
+    }
+    
+    offerInsurance() {
+        this.insuranceOffered = true;
+        const insuranceSection = document.getElementById('insurance-section');
+        insuranceSection.style.display = 'block';
+        
+        // Hide regular action buttons
+        document.querySelectorAll('.action-buttons button').forEach(btn => {
+            btn.disabled = true;
+        });
+        
+        // Check if insurance is recommended based on count
+        const decksRemaining = this.shoe.length / 52;
+        const trueCount = decksRemaining > 0 ? this.runningCount / decksRemaining : 0;
+        const roundedTC = Math.round(trueCount);
+        
+        const recommendation = document.getElementById('insurance-recommendation');
+        if (this.useDeviations && roundedTC >= 3) {
+            recommendation.textContent = `Take insurance (TC: ${roundedTC} ≥ 3)`;
+            recommendation.style.color = '#7ab85f';
+        } else {
+            recommendation.textContent = `Decline insurance (TC: ${roundedTC} < 3)`;
+            recommendation.style.color = '#ff6b6b';
+        }
+        
+        // Also update mobile insurance section if exists
+        const mobileInsurance = document.querySelector('.mobile-section[data-section="game"] #insurance-section');
+        if (mobileInsurance) {
+            mobileInsurance.style.display = 'block';
+            const mobileRec = mobileInsurance.querySelector('#insurance-recommendation');
+            if (mobileRec) {
+                mobileRec.textContent = recommendation.textContent;
+                mobileRec.style.color = recommendation.style.color;
+            }
+        }
+    }
+    
+    async takeInsurance() {
+        this.insuranceTaken = true;
+        this.hideInsuranceSection();
+        
+        // Check if dealer has blackjack (check hole card value without revealing)
+        const holeCard = this.dealerHand[1];
+        const holeCardValue = this.getCardValue(holeCard);
+        const dealerHasBlackjack = holeCardValue === 10;
+        
+        if (dealerHasBlackjack) {
+            this.showMessage('Dealer has blackjack! Insurance pays 2:1');
+        } else {
+            this.showMessage('Dealer does not have blackjack. Insurance lost.');
+        }
+        
+        await this.continueAfterInsurance();
+    }
+    
+    async declineInsurance() {
+        this.insuranceTaken = false;
+        this.hideInsuranceSection();
+        
+        await this.continueAfterInsurance();
+    }
+    
+    hideInsuranceSection() {
+        const insuranceSection = document.getElementById('insurance-section');
+        insuranceSection.style.display = 'none';
+        
+        // Also hide mobile insurance section
+        const mobileInsurance = document.querySelector('.mobile-section[data-section="game"] #insurance-section');
+        if (mobileInsurance) {
+            mobileInsurance.style.display = 'none';
+        }
+    }
+    
+    async continueAfterInsurance() {
+        // Check if dealer has blackjack
+        const holeCard = this.dealerHand[1];
+        const holeCardValue = this.getCardValue(holeCard);
+        const dealerHasBlackjack = holeCardValue === 10;
+        
+        if (dealerHasBlackjack) {
+            // Dealer has blackjack, end the hand immediately
+            await this.dealerTurn();
+            return;
+        }
+        
+        // Enable/disable buttons
+        this.updateButtons();
+        
+        // Check for player blackjack
+        const playerScore = this.calculateScore(this.playerHand);
+        if (playerScore === 21) {
+            setTimeout(() => this.stand(), this.dealSpeed);
         }
     }
 
@@ -1624,6 +1739,8 @@ class BlackjackGame {
         this.dealerHoleCardRevealed = false;
         this.handCount = 0; // Reset hand count
         this.gameActive = true;
+        this.insuranceOffered = false;
+        this.insuranceTaken = false;
         
         // Clear previous cards display
         const playerContainer = document.getElementById('player-cards');
@@ -1647,6 +1764,12 @@ class BlackjackGame {
         
         // Update strategy recommendation
         this.updateStrategyRecommendation();
+        
+        // Check if dealer has ace and offer insurance
+        if (this.insuranceEnabled && this.dealerHand[0].rank === 'A') {
+            this.offerInsurance();
+            return; // Wait for insurance decision
+        }
         
         // Enable/disable buttons
         this.updateButtons();
@@ -1746,6 +1869,19 @@ class BlackjackGame {
             if (resetStatsBtn) {
                 resetStatsBtn.addEventListener('click', () => this.resetStrategyStats());
             }
+            
+            // Re-attach help icon listeners
+            const helpIcons = strategyClone.querySelectorAll('.help-icon');
+            helpIcons.forEach(icon => {
+                icon.addEventListener('click', () => {
+                    const modalId = icon.dataset.modal;
+                    const modal = document.getElementById(modalId);
+                    if (modal) {
+                        modal.classList.add('active');
+                        this.populateModalContent(modalId);
+                    }
+                });
+            });
         }
         
         // Clone remaining cards to cards section only
@@ -1874,12 +2010,16 @@ class BlackjackGame {
         const standBtn = mobileGameSection.querySelector('#stand');
         const doubleBtn = mobileGameSection.querySelector('#double');
         const splitBtn = mobileGameSection.querySelector('#split');
+        const takeInsuranceBtn = mobileGameSection.querySelector('#take-insurance');
+        const declineInsuranceBtn = mobileGameSection.querySelector('#decline-insurance');
         
         if (dealBtn) dealBtn.addEventListener('click', () => this.deal());
         if (hitBtn) hitBtn.addEventListener('click', () => this.hit());
         if (standBtn) standBtn.addEventListener('click', () => this.stand());
         if (doubleBtn) doubleBtn.addEventListener('click', () => this.double());
         if (splitBtn) splitBtn.addEventListener('click', () => this.split());
+        if (takeInsuranceBtn) takeInsuranceBtn.addEventListener('click', () => this.takeInsurance());
+        if (declineInsuranceBtn) declineInsuranceBtn.addEventListener('click', () => this.declineInsurance());
     }
     
     setupMobileSync() {
@@ -2045,6 +2185,274 @@ class BlackjackGame {
                 subtree: true
             });
         }
+    }
+    
+    initializeStrategyModals() {
+        // Modal functionality
+        const helpIcons = document.querySelectorAll('.help-icon');
+        const modals = document.querySelectorAll('.strategy-modal');
+        const closeButtons = document.querySelectorAll('.strategy-modal-close');
+        
+        // Open modal when help icon is clicked
+        helpIcons.forEach(icon => {
+            icon.addEventListener('click', () => {
+                const modalId = icon.dataset.modal;
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('active');
+                    this.populateModalContent(modalId);
+                }
+            });
+        });
+        
+        // Close modal when close button is clicked
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                button.closest('.strategy-modal').classList.remove('active');
+            });
+        });
+        
+        // Close modal when clicking outside
+        modals.forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+        
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                modals.forEach(modal => modal.classList.remove('active'));
+            }
+        });
+    }
+    
+    populateModalContent(modalId) {
+        const modalBody = document.querySelector(`#${modalId} .strategy-modal-body`);
+        
+        if (modalId === 'basic-strategy-modal') {
+            modalBody.innerHTML = this.getBasicStrategyContent();
+        } else if (modalId === 'deviations-modal') {
+            modalBody.innerHTML = this.getDeviationsContent();
+        }
+    }
+    
+    getBasicStrategyContent() {
+        return `
+            <div class="strategy-table">
+                <h3>Hard Totals</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hand</th>
+                            <th>2</th>
+                            <th>3</th>
+                            <th>4</th>
+                            <th>5</th>
+                            <th>6</th>
+                            <th>7</th>
+                            <th>8</th>
+                            <th>9</th>
+                            <th>10</th>
+                            <th>A</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="player-hand">17+</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td></tr>
+                        <tr><td class="player-hand">16</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">15</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">14</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">13</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">12</td><td>H</td><td>H</td><td>S</td><td>S</td><td>S</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">11</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td></tr>
+                        <tr><td class="player-hand">10</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">9</td><td>H</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">8</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="strategy-table">
+                <h3>Soft Totals</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hand</th>
+                            <th>2</th>
+                            <th>3</th>
+                            <th>4</th>
+                            <th>5</th>
+                            <th>6</th>
+                            <th>7</th>
+                            <th>8</th>
+                            <th>9</th>
+                            <th>10</th>
+                            <th>A</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="player-hand">A,9</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td></tr>
+                        <tr><td class="player-hand">A,8</td><td>S</td><td>S</td><td>S</td><td>S</td><td>Ds</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td></tr>
+                        <tr><td class="player-hand">A,7</td><td>Ds</td><td>Ds</td><td>Ds</td><td>Ds</td><td>Ds</td><td>S</td><td>S</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">A,6</td><td>H</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">A,5</td><td>H</td><td>H</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">A,4</td><td>H</td><td>H</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">A,3</td><td>H</td><td>H</td><td>H</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                        <tr><td class="player-hand">A,2</td><td>H</td><td>H</td><td>H</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="strategy-table">
+                <h3>Pairs</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hand</th>
+                            <th>2</th>
+                            <th>3</th>
+                            <th>4</th>
+                            <th>5</th>
+                            <th>6</th>
+                            <th>7</th>
+                            <th>8</th>
+                            <th>9</th>
+                            <th>10</th>
+                            <th>A</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="player-hand">A,A</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td></tr>
+                        <tr><td class="player-hand">10,10</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td></tr>
+                        <tr><td class="player-hand">9,9</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>N</td><td>Y</td><td>Y</td><td>N</td><td>N</td></tr>
+                        <tr><td class="player-hand">8,8</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td></tr>
+                        <tr><td class="player-hand">7,7</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>N</td><td>N</td><td>N</td><td>N</td></tr>
+                        <tr><td class="player-hand">6,6</td><td>Y/N</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td></tr>
+                        <tr><td class="player-hand">5,5</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td></tr>
+                        <tr><td class="player-hand">4,4</td><td>N</td><td>N</td><td>N</td><td>Y/N</td><td>Y/N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td></tr>
+                        <tr><td class="player-hand">3,3</td><td>Y/N</td><td>Y/N</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>N</td><td>N</td><td>N</td><td>N</td></tr>
+                        <tr><td class="player-hand">2,2</td><td>Y/N</td><td>Y/N</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>N</td><td>N</td><td>N</td><td>N</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: rgba(202, 228, 188, 0.1); border-radius: 10px;">
+                <p style="margin: 0 0 10px 0;"><strong>Legend:</strong></p>
+                <ul style="margin: 0; padding-left: 20px; list-style: none;">
+                    <li><strong>S</strong> = Stand</li>
+                    <li><strong>H</strong> = Hit</li>
+                    <li><strong>D</strong> = Double if allowed, otherwise Hit</li>
+                    <li><strong>Ds</strong> = Double if allowed, otherwise Stand</li>
+                    <li><strong>Y</strong> = Split</li>
+                    <li><strong>N</strong> = Don't split</li>
+                    <li><strong>Y/N</strong> = Split if double after split is allowed</li>
+                </ul>
+            </div>
+        `;
+    }
+    
+    getDeviationsContent() {
+        return `
+            <div style="margin-bottom: 20px; padding: 15px; background: rgba(202, 228, 188, 0.1); border-radius: 10px;">
+                <p style="margin: 0;">The Illustrious 18 are the most important count-based strategy deviations. They account for the majority of the gain from counting cards.</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#1">
+                <h4>Insurance (Dealer shows A)</h4>
+                <p>Take insurance at <span class="tc-value">TC ≥ 3</span> (Basic strategy: Never take insurance)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#2">
+                <h4>16 vs 10</h4>
+                <p>Stand at <span class="tc-value">TC ≥ 0</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#3">
+                <h4>15 vs 10</h4>
+                <p>Stand at <span class="tc-value">TC ≥ 4</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#4">
+                <h4>10,10 vs 5</h4>
+                <p>Split at <span class="tc-value">TC ≥ 5</span> (Basic strategy: Stand)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#5">
+                <h4>10,10 vs 6</h4>
+                <p>Split at <span class="tc-value">TC ≥ 4</span> (Basic strategy: Stand)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#6">
+                <h4>10 vs 10</h4>
+                <p>Double at <span class="tc-value">TC ≥ 4</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#7">
+                <h4>12 vs 3</h4>
+                <p>Stand at <span class="tc-value">TC ≥ 2</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#8">
+                <h4>12 vs 2</h4>
+                <p>Stand at <span class="tc-value">TC ≥ 3</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#9">
+                <h4>11 vs A</h4>
+                <p>Double at <span class="tc-value">TC ≥ 1</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#10">
+                <h4>9 vs 2</h4>
+                <p>Double at <span class="tc-value">TC ≥ 1</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#11">
+                <h4>10 vs A</h4>
+                <p>Double at <span class="tc-value">TC ≥ 4</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#12">
+                <h4>9 vs 7</h4>
+                <p>Double at <span class="tc-value">TC ≥ 3</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#13">
+                <h4>16 vs 9</h4>
+                <p>Stand at <span class="tc-value">TC ≥ 5</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#14">
+                <h4>13 vs 2</h4>
+                <p>Stand at <span class="tc-value">TC ≥ -1</span> (Basic strategy: Hit)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#15">
+                <h4>12 vs 4</h4>
+                <p>Hit at <span class="tc-value">TC < 0</span> (Basic strategy: Stand)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#16">
+                <h4>12 vs 5</h4>
+                <p>Hit at <span class="tc-value">TC ≤ -2</span> (Basic strategy: Stand)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#17">
+                <h4>12 vs 6</h4>
+                <p>Hit at <span class="tc-value">TC ≤ -1</span> (Basic strategy: Stand)</p>
+            </div>
+            
+            <div class="deviation-item" data-index="#18">
+                <h4>13 vs 3</h4>
+                <p>Hit at <span class="tc-value">TC ≤ -2</span> (Basic strategy: Stand)</p>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: rgba(202, 228, 188, 0.1); border-radius: 10px;">
+                <p style="margin: 0;"><strong>Note:</strong> TC = True Count (Running Count ÷ Decks Remaining)</p>
+            </div>
+        `;
     }
 }
 
