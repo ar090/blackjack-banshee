@@ -1,5 +1,5 @@
 // Version info - updated during build/commit
-const VERSION = '2974710'; // Will be replaced with git hash
+const VERSION = 'b779800'; // Will be replaced with git hash
 
 // Card counting trainer
 class BlackjackGame {
