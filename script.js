@@ -1,5 +1,5 @@
 // Version info - updated during build/commit
-const VERSION = 'e6f0c17'; // Will be replaced with git hash
+const VERSION = '6239bc5'; // Will be replaced with git hash
 
 // Card counting trainer
 class BlackjackGame {
@@ -1087,6 +1087,16 @@ class BlackjackGame {
         const decksRemaining = this.shoe.length / 52;
         const trueCount = decksRemaining > 0 ? this.runningCount / decksRemaining : 0;
         
+        // Check if insurance is being offered
+        if (this.insuranceOffered && !this.insuranceTaken) {
+            const roundedTC = Math.round(trueCount);
+            if (this.useDeviations && roundedTC >= 3) {
+                return { action: 'INSURANCE', explanation: `Take insurance (TC: ${roundedTC} ≥ 3)` };
+            } else {
+                return { action: 'NO INSURANCE', explanation: `Decline insurance (TC: ${roundedTC} < 3)` };
+            }
+        }
+        
         // Apply Illustrious 18 deviations if enabled
         if (this.useDeviations) {
             const deviation = this.checkDeviations(playerTotal, dealerValue, trueCount);
@@ -1535,6 +1545,7 @@ class BlackjackGame {
     
     async takeInsurance() {
         this.insuranceTaken = true;
+        this.insuranceOffered = false; // Insurance decision has been made
         this.hideInsuranceSection();
         
         // Check if dealer has blackjack (check hole card value without revealing)
@@ -1553,6 +1564,7 @@ class BlackjackGame {
     
     async declineInsurance() {
         this.insuranceTaken = false;
+        this.insuranceOffered = false; // Insurance decision has been made
         this.hideInsuranceSection();
         
         await this.continueAfterInsurance();
@@ -1580,6 +1592,9 @@ class BlackjackGame {
             await this.dealerTurn();
             return;
         }
+        
+        // Update strategy recommendation now that insurance is resolved
+        this.updateStrategyRecommendation();
         
         // Enable/disable buttons
         this.updateButtons();
