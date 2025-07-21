@@ -2106,13 +2106,20 @@ input[type="range"]::-moz-range-thumb:hover {
         display: none;
     }
     
-    /* Hide deal button when game is active (mobile only) */
-    .mobile-section .controls:not(.game-idle) #deal {
+    /* Hide deal and reset-shoe buttons when game is active (mobile only) */
+    .mobile-section .controls:not(.game-idle) #deal,
+    .mobile-section .controls:not(.game-idle) #reset-shoe {
         display: none;
     }
     
-    /* Make deal button more prominent when it's the only button */
-    .game-idle #deal {
+    /* Hide reset-shoe button when game is active */
+    .controls:not(.game-idle) #reset-shoe {
+        display: none;
+    }
+    
+    /* Make deal and reset-shoe buttons more prominent when game is idle */
+    .game-idle #deal,
+    .game-idle #reset-shoe {
         display: block !important;
         height: 32px;
         font-size: 0.85em;

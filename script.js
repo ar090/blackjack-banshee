@@ -1,5 +1,5 @@
 // Version info - updated during build/commit
-const VERSION = '2a9603a'; // Will be replaced with git hash
+const VERSION = '5136ee3'; // Will be replaced with git hash
 
 // Card counting trainer
 class BlackjackGame {
@@ -1971,6 +1971,16 @@ class BlackjackGame {
             const clonedControls = gameClone.querySelector('.controls');
             if (clonedControls) {
                 clonedControls.classList.add('game-idle');
+                
+                // Add reset-shoe button to mobile controls
+                const resetShoeBtn = document.querySelector('#reset-shoe');
+                if (resetShoeBtn && !clonedControls.querySelector('#reset-shoe')) {
+                    const resetShoeClone = resetShoeBtn.cloneNode(true);
+                    const actionButtons = clonedControls.querySelector('.action-buttons');
+                    if (actionButtons) {
+                        actionButtons.appendChild(resetShoeClone);
+                    }
+                }
             }
             
             // Re-attach event listeners for cloned elements
@@ -2134,6 +2144,7 @@ class BlackjackGame {
         const splitBtn = mobileGameSection.querySelector('#split');
         const takeInsuranceBtn = mobileGameSection.querySelector('#take-insurance');
         const declineInsuranceBtn = mobileGameSection.querySelector('#decline-insurance');
+        const resetShoeBtn = mobileGameSection.querySelector('#reset-shoe');
         
         if (dealBtn) dealBtn.addEventListener('click', () => this.deal());
         if (hitBtn) hitBtn.addEventListener('click', () => this.hit());
@@ -2142,6 +2153,7 @@ class BlackjackGame {
         if (splitBtn) splitBtn.addEventListener('click', () => this.split());
         if (takeInsuranceBtn) takeInsuranceBtn.addEventListener('click', () => this.takeInsurance());
         if (declineInsuranceBtn) declineInsuranceBtn.addEventListener('click', () => this.declineInsurance());
+        if (resetShoeBtn) resetShoeBtn.addEventListener('click', () => this.resetShoe());
     }
     
     setupMobileSync() {
